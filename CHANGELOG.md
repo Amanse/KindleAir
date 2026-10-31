@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.0-beta.2 — 2026-10-31
+
+- Add KUAL → KindleAir → Settings → Low power mode with saved Enable/Disable and Show setting actions.
+- Default the saved low-power preference to off; regular Start uses the saved choice.
+- Apply settings changes to a running receiver without restarting its audio process.
+- Keep the quick low-power start as a session override and exclude device preferences from release packages.
+
 ## 0.2.0-beta.1 — 2026-10-31
 
 - Introduce optional KUAL low-power AirPlay mode and live restoration to normal power.

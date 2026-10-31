@@ -63,3 +63,4 @@ subprocess.run(['python3', str(ROOT / 'tests/test_component.py')], check=True)
 
 subprocess.run(["python3", str(ROOT / "tests/test_sleep.py")], check=True)
 subprocess.run(["python3", str(ROOT / "tests/test_power_mode.py")], check=True)
+subprocess.run(["python3", str(ROOT / "tests/test_power_settings.py")], check=True)

@@ -32,6 +32,31 @@
           "params": "stop"
         },
         {
+          "name": "Settings",
+          "items": [
+            {
+              "name": "Low power mode",
+              "items": [
+                {
+                  "name": "Enable (saved default)",
+                  "action": "./kindleair.sh",
+                  "params": "power-low"
+                },
+                {
+                  "name": "Disable (saved default)",
+                  "action": "./kindleair.sh",
+                  "params": "power-normal"
+                },
+                {
+                  "name": "Show setting",
+                  "action": "./kindleair.sh",
+                  "params": "power-status"
+                }
+              ]
+            }
+          ]
+        },
+        {
           "name": "Sleep behavior",
           "items": [
             {

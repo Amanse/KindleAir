@@ -3,6 +3,7 @@ BASE=/mnt/us/extensions/kindleair
 STATE=/tmp/kindleair-control
 LOG="$BASE/kindleair.log"
 SLEEP_PREF="$BASE/keep-awake.conf"
+LOW_POWER_PREF="$BASE/low-power.conf"
 notice() {
  KA_MESSAGE=$(printf '%s' "$*" | tr ';' ',' | cut -c 1-25)
  eips 1 2 "KindleAir: $KA_MESSAGE" 2>/dev/null || :
@@ -45,6 +46,15 @@ save_sleep_setting() {
  printf '%s\n' "$1" > "$SLEEP_PREF.new" && mv "$SLEEP_PREF.new" "$SLEEP_PREF" || return 1
  if alive; then apply_sleep_setting || return 1; fi
 }
+preferred_power_mode() {
+ if [ -f "$LOW_POWER_PREF" ] && [ "$(cat "$LOW_POWER_PREF")" = 1 ]; then echo low; else echo normal; fi
+}
+save_power_setting() {
+ printf '%s\n' "$1" > "$LOW_POWER_PREF.new" && mv "$LOW_POWER_PREF.new" "$LOW_POWER_PREF" || return 1
+ if alive; then
+  if [ "$1" = 1 ]; then "$BASE/power-mode.sh" enter; else "$BASE/power-mode.sh" restore; fi
+ fi
+}
 native_lipc_get() { (unset DBUS_SYSTEM_BUS_ADDRESS; lipc-get-prop "$@"); }
 native_lipc_set() { (unset DBUS_SYSTEM_BUS_ADDRESS; lipc-set-prop "$@"); }
 diagnose() {
@@ -59,6 +69,7 @@ diagnose() {
    native_lipc_get com.lab126.audiomgrd "$prop" 2>&1
   done
   echo 'Keep-awake preference'; if keep_awake_enabled; then echo enabled; else echo disabled; fi
+  echo 'Default power mode'; preferred_power_mode
   echo 'Power mode'; "$BASE/power-mode.sh" status
   echo 'Power inhibit'; native_lipc_get com.lab126.powerd preventScreenSaver 2>&1
   echo 'Audio tools'
@@ -74,7 +85,7 @@ diagnose() {
 }
 case "${1:-status}" in
  start|start-low)
-  KA_START_MODE=normal
+  KA_START_MODE=$(preferred_power_mode)
   [ "$1" != start-low ] || KA_START_MODE=low
   if alive && [ "$KA_START_MODE" = low ]; then
    "$BASE/power-mode.sh" enter || { notice 'low power setup failed'; exit 1; }
@@ -94,6 +105,17 @@ case "${1:-status}" in
   fi
   rm -f "$STATE/pid" "$STATE/ready" "$STATE/runtime"; rmdir "$STATE" 2>/dev/null || :
   notice 'stopped'
+  ;;
+ power-low)
+  save_power_setting 1 || { notice 'power setting failed'; exit 1; }
+  notice 'low power default ON'
+  ;;
+ power-normal)
+  save_power_setting 0 || { notice 'power setting failed'; exit 1; }
+  notice 'low power default OFF'
+  ;;
+ power-status)
+  if [ "$(preferred_power_mode)" = low ]; then notice 'low power default ON'; else notice 'low power default OFF'; fi
   ;;
  normal-power)
   "$BASE/power-mode.sh" restore || { notice 'power restore failed'; exit 1; }
@@ -160,7 +182,7 @@ case "${1:-status}" in
    done
   }
   for name in dbus avahi sink receiver; do rm -f "$BASE/$name.log" "$BASE/$name.exit"; done
-  echo 'KindleAir 0.2.0-beta.1 / Shairport Sync 5.5.1 / classic AirPlay'
+  echo 'KindleAir 0.2.0-beta.2 / Shairport Sync 5.5.1 / classic AirPlay'
   native_sink probe || fail 'firmware mixer unavailable; collect diagnostics'
   RT=$(mktemp -d /tmp/kindleair.XXXXXX) || fail 'cannot allocate runtime'
   tar -xzf "$BASE/runtime.tar.gz" -C "$RT" || fail 'cannot extract runtime'
@@ -233,5 +255,5 @@ EOF
    KA_SLEEP_SECONDS=$((KA_SLEEP_SECONDS + KA_POLL_SECONDS))
   done
   ;;
- *) echo 'Usage: kindleair.sh start|start-low|stop|normal-power|status|bluetooth|sleep-on|sleep-off|sleep-status|diagnose'; exit 2;;
+ *) echo 'Usage: kindleair.sh start|start-low|stop|normal-power|power-low|power-normal|power-status|status|bluetooth|sleep-on|sleep-off|sleep-status|diagnose'; exit 2;;
 esac

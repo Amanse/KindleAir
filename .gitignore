@@ -18,3 +18,4 @@ kindleair-ssh*
 
 # Device-specific sleep preference (saved by the KUAL menu).
 extensions/kindleair/keep-awake.conf*
+extensions/kindleair/low-power.conf*

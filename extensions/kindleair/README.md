@@ -1,4 +1,4 @@
-# KindleAir 0.2.0-beta.1
+# KindleAir 0.2.0-beta.2
 
 Classic AirPlay audio receiver → Kindle firmware mixer → paired Bluetooth headphones or speaker.
 
@@ -23,7 +23,7 @@ It starts on demand, not at boot. This is classic AirPlay audio; AirPlay 2, Home
 
 ## Low-power mode
 
-KUAL → KindleAir → **Start AirPlay (low power)** enters a session-only mode with adaptive CPU scaling when available, frontlight off, quiet receiver logging and fewer supervisor wakeups. It keeps Wi-Fi, Bluetooth and KUAL available. **Restore normal power** restores the saved governor and brightness without stopping the receiver; Stop restores them too. Later manual brightness/governor changes are respected. This is not deep sleep, and battery-life improvement has not been quantified.
+KUAL → KindleAir → **Settings → Low power mode** saves an optional default (disabled initially) and applies it immediately while running. **Start AirPlay (low power)** also enters a session-only mode with adaptive CPU scaling when available, frontlight off, quiet receiver logging and fewer supervisor wakeups. It keeps Wi-Fi, Bluetooth and KUAL available. **Restore normal power** restores the saved governor and brightness without stopping the receiver; Stop restores them too. Later manual brightness/governor changes are respected. This is not deep sleep, and battery-life improvement has not been quantified.
 
 ## Sleep behavior
 

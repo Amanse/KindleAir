@@ -8,7 +8,7 @@ Mac / iPhone / iPad ──AirPlay over Wi-Fi──> Kindle ──Bluetooth──
 
 KindleAir combines [Shairport Sync](https://github.com/mikebrady/shairport-sync) with the Kindle's native GStreamer `mixersink` audio output, following [KinAMP](https://github.com/kbarni/KinAMP)'s audio pipeline and Bluetooth pairing dialog.
 
-**Status: Beta**, version **0.2.0-beta.1**. KindleAir should work on jailbroken Kindles with Bluetooth audio support, KUAL and KOReader, where the firmware provides the compatible native audio mixer. Playback is confirmed on a Kindle Basic 3 (10th generation); other models and firmware versions have not yet been verified.
+**Status: Beta**, version **0.2.0-beta.2**. KindleAir should work on jailbroken Kindles with Bluetooth audio support, KUAL and KOReader, where the firmware provides the compatible native audio mixer. Playback is confirmed on a Kindle Basic 3 (10th generation); other models and firmware versions have not yet been verified.
 
 ## Requirements
 
@@ -42,7 +42,7 @@ To make a drag-and-drop installation ZIP from a checkout:
 python3 scripts/package.py
 ```
 
-Extract the resulting `dist/KindleAir-0.2.0-beta.1.zip` onto the Kindle's USB storage root.
+Extract the resulting `dist/KindleAir-0.2.0-beta.2.zip` onto the Kindle's USB storage root.
 
 ## Pair and play
 
@@ -58,7 +58,9 @@ KUAL also provides **Status** and **Collect diagnostics**. KindleAir starts on d
 
 ## Optional low-power AirPlay mode
 
-Choose **KUAL → KindleAir → Start AirPlay (low power)**. You can select it while the receiver is already running; the stream does not need to restart.
+**Saved option:** open **KUAL → KindleAir → Settings → Low power mode → Enable / Disable**. It defaults to **disabled**, persists across sessions, and applies immediately to a running receiver. The regular Start action uses this choice. **Show setting** displays it.
+
+For a one-session override, choose **KUAL → KindleAir → Start AirPlay (low power)**. You can select it while the receiver is already running; the stream does not need to restart.
 
 Low-power mode:
 
@@ -67,7 +69,7 @@ Low-power mode:
 - Quiets receiver diagnostics and checks component health every 10 seconds instead of every 2 seconds.
 - Keeps Wi-Fi, Bluetooth, the firmware interface and KUAL available.
 
-Choose **Restore normal power** to leave the receiver running with the original CPU/light settings. **Stop AirPlay receiver** also restores them. Manual governor or brightness changes made after entering the mode take precedence during restoration. The mode lasts for the current receiver session; the regular Start action uses normal power settings for a new session.
+Choose **Restore normal power** to leave the receiver running with the original CPU/light settings. **Stop AirPlay receiver** also restores them. Manual governor or brightness changes made after entering the mode take precedence during restoration. The quick-start and Restore normal power actions affect only the current session; they do not change the saved Settings choice. The device preference is stored in `low-power.conf` and is not included in release ZIPs.
 
 This reduces avoidable activity but does not put the Kindle into deep sleep: AirPlay needs Wi-Fi, decoding and Bluetooth transmission to remain active. Battery-life improvement has not been quantified in a controlled test. Unsupported hardware controls are skipped, so behavior can differ across Kindle models.
 

@@ -1,0 +1,17 @@
+.DS_Store
+._*
+__pycache__/
+*.py[cod]
+build/
+dist/
+*.log
+*.exit
+crash-*.log
+diagnostics.txt
+core
+core.*
+# Never commit device access material.
+*authorized_keys*
+*known_hosts*
+kindleair-ssh*
+*.pem

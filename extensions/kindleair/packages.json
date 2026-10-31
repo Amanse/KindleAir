@@ -1,0 +1,250 @@
+[
+  {
+    "name": "shairport-sync",
+    "version": "5.5.1-r0",
+    "url": "https://dl-cdn.alpinelinux.org/alpine/latest-stable/community/armv7/shairport-sync-5.5.1-r0.apk",
+    "sha256": "ff6115cc0712b09f0e8a934d09b98b4326777049318cd784824da3ebf7e97b59",
+    "license": "custom",
+    "source_recipe": "https://gitlab.alpinelinux.org/alpine/aports/-/tree/e3dbdeec3fbf4426943353c98158138d066f226b/community/shairport-sync"
+  },
+  {
+    "name": "avahi",
+    "version": "0.9_rc4-r0",
+    "url": "https://dl-cdn.alpinelinux.org/alpine/latest-stable/main/armv7/avahi-0.9_rc4-r0.apk",
+    "sha256": "4567243c9c2813dbc2ecacb111031d258af93f25e593747952a0874ed83d7290",
+    "license": "LGPL-2.1-or-later",
+    "source_recipe": "https://gitlab.alpinelinux.org/alpine/aports/-/tree/c8147a84799898ff9780bc4f3c179ccc141e8e67/main/avahi"
+  },
+  {
+    "name": "dbus",
+    "version": "1.16.2-r2",
+    "url": "https://dl-cdn.alpinelinux.org/alpine/latest-stable/main/armv7/dbus-1.16.2-r2.apk",
+    "sha256": "4d446831858f8195f2d141c43a234a76719b5fa26531069956d3fa8646726083",
+    "license": "AFL-2.1 OR GPL-2.0-or-later",
+    "source_recipe": "https://gitlab.alpinelinux.org/alpine/aports/-/tree/0dac2d7bf76016e3bb78ccc734edbb157a1d4b51/main/dbus"
+  },
+  {
+    "name": "alsa-lib",
+    "version": "1.2.15.3-r0",
+    "url": "https://dl-cdn.alpinelinux.org/alpine/latest-stable/main/armv7/alsa-lib-1.2.15.3-r0.apk",
+    "sha256": "7c0c51faf235efa523621a8e2b86acc432574b729d5faeb243f42688e5e395dc",
+    "license": "LGPL-2.1-or-later",
+    "source_recipe": "https://gitlab.alpinelinux.org/alpine/aports/-/tree/2939b0cfc6acaf6eeb012f4e371d46c537d4e9f9/main/alsa-lib"
+  },
+  {
+    "name": "avahi-libs",
+    "version": "0.9_rc4-r0",
+    "url": "https://dl-cdn.alpinelinux.org/alpine/latest-stable/main/armv7/avahi-libs-0.9_rc4-r0.apk",
+    "sha256": "f54f7aafe7474e660baefa5a83abe61710579bc975424dea7369d99e9354ca23",
+    "license": "LGPL-2.1-or-later",
+    "source_recipe": "https://gitlab.alpinelinux.org/alpine/aports/-/tree/c8147a84799898ff9780bc4f3c179ccc141e8e67/main/avahi"
+  },
+  {
+    "name": "musl",
+    "version": "1.2.6-r3",
+    "url": "https://dl-cdn.alpinelinux.org/alpine/latest-stable/main/armv7/musl-1.2.6-r3.apk",
+    "sha256": "9fca75b09538f9788b1ca800d56cd93dd4d584fac76a57c959666a9a0b93d397",
+    "license": "MIT",
+    "source_recipe": "https://gitlab.alpinelinux.org/alpine/aports/-/tree/8f79d39391b46d6dbf1800fb68b8212a21d5ee2e/main/musl"
+  },
+  {
+    "name": "libconfig",
+    "version": "1.8.2-r0",
+    "url": "https://dl-cdn.alpinelinux.org/alpine/latest-stable/main/armv7/libconfig-1.8.2-r0.apk",
+    "sha256": "376a2a5558f5b9bf46f3ee5e3a43554c403cb92c2d4a86c8d810241fb6f2cd72",
+    "license": "LGPL-2.1-or-later",
+    "source_recipe": "https://gitlab.alpinelinux.org/alpine/aports/-/tree/94e5bc1d41cf1aef500ad7c70d60ade22ea67e57/main/libconfig"
+  },
+  {
+    "name": "libcrypto3",
+    "version": "3.5.9-r0",
+    "url": "https://dl-cdn.alpinelinux.org/alpine/latest-stable/main/armv7/libcrypto3-3.5.9-r0.apk",
+    "sha256": "4bbfb11194ac706ff0c6997a2a4633cf238332f9a4b563d8435167ebd19aa8db",
+    "license": "Apache-2.0",
+    "source_recipe": "https://gitlab.alpinelinux.org/alpine/aports/-/tree/29b9ec24b1b5b39aeef51fa2a044210e2ec5258e/main/openssl"
+  },
+  {
+    "name": "libgcc",
+    "version": "15.2.0-r5",
+    "url": "https://dl-cdn.alpinelinux.org/alpine/latest-stable/main/armv7/libgcc-15.2.0-r5.apk",
+    "sha256": "70aa586717f20bf57f80c06d454712095964261c02c92f8d3a120a0aecd05934",
+    "license": "GPL-2.0-or-later AND LGPL-2.1-or-later",
+    "source_recipe": "https://gitlab.alpinelinux.org/alpine/aports/-/tree/423a8ad043d07f2c7546c8ec3e2b0384cda360ae/main/gcc"
+  },
+  {
+    "name": "glib",
+    "version": "2.88.1-r1",
+    "url": "https://dl-cdn.alpinelinux.org/alpine/latest-stable/main/armv7/glib-2.88.1-r1.apk",
+    "sha256": "4a2bf7b7d6255307f2c818087b740626c404f577b5f62dca1dd0ba8f57292237",
+    "license": "LGPL-2.1-or-later",
+    "source_recipe": "https://gitlab.alpinelinux.org/alpine/aports/-/tree/bd96e2db11c9ba7d7795454d16af620d577614c7/main/glib"
+  },
+  {
+    "name": "popt",
+    "version": "1.19-r4",
+    "url": "https://dl-cdn.alpinelinux.org/alpine/latest-stable/main/armv7/popt-1.19-r4.apk",
+    "sha256": "c031b8eb36fb80143e81e24b73df1ed3d746845d6381cec760a8e0b042d6b18e",
+    "license": "MIT",
+    "source_recipe": "https://gitlab.alpinelinux.org/alpine/aports/-/tree/d3abe30d43524bed75a29a3006e703ab51836548/main/popt"
+  },
+  {
+    "name": "soxr",
+    "version": "0.1.3-r7",
+    "url": "https://dl-cdn.alpinelinux.org/alpine/latest-stable/community/armv7/soxr-0.1.3-r7.apk",
+    "sha256": "e8f03797074f356817a71674ff5995a0328d14c66768999a5107a8b2020800dc",
+    "license": "LGPL-2.1-or-later",
+    "source_recipe": "https://gitlab.alpinelinux.org/alpine/aports/-/tree/a7ec97e438d943083c5e7ffb0c7a20b546c60d31/community/soxr"
+  },
+  {
+    "name": "yash-binsh",
+    "version": "2.60-r0",
+    "url": "https://dl-cdn.alpinelinux.org/alpine/latest-stable/main/armv7/yash-binsh-2.60-r0.apk",
+    "sha256": "a0c2e6aa35161856d112f1895a28cdd91470deba73f3b38c2f6ce49770b58871",
+    "license": "GPL-2.0-or-later",
+    "source_recipe": "https://gitlab.alpinelinux.org/alpine/aports/-/tree/a176a7d65ac30ae499bc6675ea2789012716a919/main/yash"
+  },
+  {
+    "name": "libcap2",
+    "version": "2.78-r0",
+    "url": "https://dl-cdn.alpinelinux.org/alpine/latest-stable/main/armv7/libcap2-2.78-r0.apk",
+    "sha256": "f92c87875498f527d2b4bb3c43af63d9301b0d54ef08a95d6f50b82c3d772e02",
+    "license": "BSD-3-Clause OR GPL-2.0-only",
+    "source_recipe": "https://gitlab.alpinelinux.org/alpine/aports/-/tree/0c35848136c4c16a1b1672cb812efa88fffef1c2/main/libcap"
+  },
+  {
+    "name": "libdaemon",
+    "version": "0.14-r6",
+    "url": "https://dl-cdn.alpinelinux.org/alpine/latest-stable/main/armv7/libdaemon-0.14-r6.apk",
+    "sha256": "0bd88d5a7e2a58041d2f8851fcf41660ce17358346d484c20a7b76b1add4705f",
+    "license": "MIT",
+    "source_recipe": "https://gitlab.alpinelinux.org/alpine/aports/-/tree/f8d62aa6b1bf91ade408013dde5995156561903c/main/libdaemon"
+  },
+  {
+    "name": "dbus-libs",
+    "version": "1.16.2-r2",
+    "url": "https://dl-cdn.alpinelinux.org/alpine/latest-stable/main/armv7/dbus-libs-1.16.2-r2.apk",
+    "sha256": "817faaf79c5b5251c3f256e6972f5f2835c6a80525f416da660fc61d058d51c9",
+    "license": "AFL-2.1 OR GPL-2.0-or-later",
+    "source_recipe": "https://gitlab.alpinelinux.org/alpine/aports/-/tree/0dac2d7bf76016e3bb78ccc734edbb157a1d4b51/main/dbus"
+  },
+  {
+    "name": "libevent",
+    "version": "2.1.13-r0",
+    "url": "https://dl-cdn.alpinelinux.org/alpine/latest-stable/main/armv7/libevent-2.1.13-r0.apk",
+    "sha256": "83bd02989be592fe27b71d350fe29516b05a345a741718ce77a167701a2eb092",
+    "license": "BSD-3-Clause",
+    "source_recipe": "https://gitlab.alpinelinux.org/alpine/aports/-/tree/7c5a7049c5779d87b9b4fa1c7d416056f7e30298/main/libevent"
+  },
+  {
+    "name": "libexpat",
+    "version": "2.9.0-r0",
+    "url": "https://dl-cdn.alpinelinux.org/alpine/latest-stable/main/armv7/libexpat-2.9.0-r0.apk",
+    "sha256": "8d72afa72dd7e527507410ac3cf2fa7d2adb619a9dc21faa5bd634e51f20a840",
+    "license": "MIT",
+    "source_recipe": "https://gitlab.alpinelinux.org/alpine/aports/-/tree/c10df79ce35862cf273f98f6eb78d52e4f064ac7/main/expat"
+  },
+  {
+    "name": "libintl",
+    "version": "1.0-r0",
+    "url": "https://dl-cdn.alpinelinux.org/alpine/latest-stable/main/armv7/libintl-1.0-r0.apk",
+    "sha256": "b3c661a74bfefc8aa5c52782756650a5f35ba7b1b7e0b64de1393146054f0e57",
+    "license": "LGPL-2.1-or-later",
+    "source_recipe": "https://gitlab.alpinelinux.org/alpine/aports/-/tree/a0b12dbf67fb047e79a1b76c6dfe6f2904d0d391/main/gettext"
+  },
+  {
+    "name": "libffi",
+    "version": "3.5.2-r1",
+    "url": "https://dl-cdn.alpinelinux.org/alpine/latest-stable/main/armv7/libffi-3.5.2-r1.apk",
+    "sha256": "cf9343ce68d6c54f1112c5328c8a39ea3a3c289c1020ddec164f0f5e5e19aaf4",
+    "license": "MIT",
+    "source_recipe": "https://gitlab.alpinelinux.org/alpine/aports/-/tree/2c2a7bb4a8b16066834e90402567b2c19403a790/main/libffi"
+  },
+  {
+    "name": "libmount",
+    "version": "2.42.3-r1",
+    "url": "https://dl-cdn.alpinelinux.org/alpine/latest-stable/main/armv7/libmount-2.42.3-r1.apk",
+    "sha256": "6b05c9467bc7a1132a89f02dc23f2ada0621d5c989b2d08cd685af6cf7cd3380",
+    "license": "LGPL-2.1-or-later",
+    "source_recipe": "https://gitlab.alpinelinux.org/alpine/aports/-/tree/d98c55af59055e6ca60fbe36e171546918709965/main/util-linux"
+  },
+  {
+    "name": "pcre2",
+    "version": "10.49-r0",
+    "url": "https://dl-cdn.alpinelinux.org/alpine/latest-stable/main/armv7/pcre2-10.49-r0.apk",
+    "sha256": "e2710b8d060f05be4c4f0222aa2787713fd86dd38dbacd50f9d1ebf21e6b8700",
+    "license": "BSD-3-Clause",
+    "source_recipe": "https://gitlab.alpinelinux.org/alpine/aports/-/tree/3d497cbb3217749c4fb85f90f3b6f7908b0c1f95/main/pcre2"
+  },
+  {
+    "name": "zlib",
+    "version": "1.3.2-r1",
+    "url": "https://dl-cdn.alpinelinux.org/alpine/latest-stable/main/armv7/zlib-1.3.2-r1.apk",
+    "sha256": "4a4077c3243a6dfd5e16df20ecbe100acd72ab24eab32c91790ec1eb32d23053",
+    "license": "Zlib",
+    "source_recipe": "https://gitlab.alpinelinux.org/alpine/aports/-/tree/0afa2da0e8c8051c6f8f64a7a388e5a259904245/main/zlib"
+  },
+  {
+    "name": "libgomp",
+    "version": "15.2.0-r5",
+    "url": "https://dl-cdn.alpinelinux.org/alpine/latest-stable/main/armv7/libgomp-15.2.0-r5.apk",
+    "sha256": "a12f05478d71db2d416081c17b1de3cfe23dd603b328d7642f276e8a844c6413",
+    "license": "GPL-2.0-or-later AND LGPL-2.1-or-later",
+    "source_recipe": "https://gitlab.alpinelinux.org/alpine/aports/-/tree/423a8ad043d07f2c7546c8ec3e2b0384cda360ae/main/gcc"
+  },
+  {
+    "name": "busybox",
+    "version": "1.37.0-r31",
+    "url": "https://dl-cdn.alpinelinux.org/alpine/latest-stable/main/armv7/busybox-1.37.0-r31.apk",
+    "sha256": "032c499bfa5ea22944fc8ffce2aa5d0603f1f8810f91b73c453d053692fe2f32",
+    "license": "GPL-2.0-only",
+    "source_recipe": "https://gitlab.alpinelinux.org/alpine/aports/-/tree/c3ef5d10e6ef6528852c51f0564963e2f8c1be19/main/busybox"
+  },
+  {
+    "name": "yash",
+    "version": "2.60-r0",
+    "url": "https://dl-cdn.alpinelinux.org/alpine/latest-stable/main/armv7/yash-2.60-r0.apk",
+    "sha256": "bc5650b1e10ef84c0eeaf9a7dc97b84a1f8a7ce27bc15dbb76dcdfc22ce6ebb7",
+    "license": "GPL-2.0-or-later",
+    "source_recipe": "https://gitlab.alpinelinux.org/alpine/aports/-/tree/a176a7d65ac30ae499bc6675ea2789012716a919/main/yash"
+  },
+  {
+    "name": "libssl3",
+    "version": "3.5.9-r0",
+    "url": "https://dl-cdn.alpinelinux.org/alpine/latest-stable/main/armv7/libssl3-3.5.9-r0.apk",
+    "sha256": "0236ecfa1a2a1fc819938d83709ecacb3c9f7ef131c29128226fd3fb68fb44eb",
+    "license": "Apache-2.0",
+    "source_recipe": "https://gitlab.alpinelinux.org/alpine/aports/-/tree/29b9ec24b1b5b39aeef51fa2a044210e2ec5258e/main/openssl"
+  },
+  {
+    "name": "libblkid",
+    "version": "2.42.3-r1",
+    "url": "https://dl-cdn.alpinelinux.org/alpine/latest-stable/main/armv7/libblkid-2.42.3-r1.apk",
+    "sha256": "48a6d0a7415a1d0094ba136243d5b0472f815cf95193c66f00d8a521ae651eae",
+    "license": "LGPL-2.1-or-later",
+    "source_recipe": "https://gitlab.alpinelinux.org/alpine/aports/-/tree/d98c55af59055e6ca60fbe36e171546918709965/main/util-linux"
+  },
+  {
+    "name": "libncursesw",
+    "version": "6.6_p20260516-r0",
+    "url": "https://dl-cdn.alpinelinux.org/alpine/latest-stable/main/armv7/libncursesw-6.6_p20260516-r0.apk",
+    "sha256": "c58cc03abe88cc770d11c5b63b423f6b2099ee6319e2d5b72b71d767d125a39c",
+    "license": "X11",
+    "source_recipe": "https://gitlab.alpinelinux.org/alpine/aports/-/tree/2cee8a7328d061418336ad327b512d96bcd7bc5e/main/ncurses"
+  },
+  {
+    "name": "libeconf",
+    "version": "0.8.3-r0",
+    "url": "https://dl-cdn.alpinelinux.org/alpine/latest-stable/main/armv7/libeconf-0.8.3-r0.apk",
+    "sha256": "1ced9b481d9c0a6e1ce6e04650a13da1e45c9cadb655efe6c8b17c595d764bd7",
+    "license": "MIT",
+    "source_recipe": "https://gitlab.alpinelinux.org/alpine/aports/-/tree/62db33049768522f381410614d59c7d732f72c3a/main/libeconf"
+  },
+  {
+    "name": "ncurses-terminfo-base",
+    "version": "6.6_p20260516-r0",
+    "url": "https://dl-cdn.alpinelinux.org/alpine/latest-stable/main/armv7/ncurses-terminfo-base-6.6_p20260516-r0.apk",
+    "sha256": "ae9f8408f746583c8da79f3dc24663ca058c9b12eec6c1a028ad1dea538629bb",
+    "license": "X11",
+    "source_recipe": "https://gitlab.alpinelinux.org/alpine/aports/-/tree/2cee8a7328d061418336ad327b512d96bcd7bc5e/main/ncurses"
+  }
+]

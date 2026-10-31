@@ -1,0 +1,7 @@
+{
+  "file": "usr/lib/kindleair-avahi-accounts.so",
+  "sha256": "ce41b9c21fc4f9020adf3403b5d94ac9fd8f0173f88013075647db118ae61e24",
+  "source": "avahi-accounts.c",
+  "license": "MIT",
+  "purpose": "Map Avahi build-time account to invoking process IDs only in bundled no-drop-root Avahi"
+}

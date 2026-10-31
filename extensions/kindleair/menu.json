@@ -1,0 +1,36 @@
+{
+  "items": [
+    {
+      "name": "KindleAir",
+      "items": [
+        {
+          "name": "Pair Bluetooth speaker",
+          "action": "./kindleair.sh",
+          "params": "bluetooth",
+          "exitmenu": true
+        },
+        {
+          "name": "Start AirPlay receiver",
+          "action": "./kindleair.sh",
+          "exitmenu": true,
+          "params": "start"
+        },
+        {
+          "name": "Stop AirPlay receiver",
+          "action": "./kindleair.sh",
+          "params": "stop"
+        },
+        {
+          "name": "Status",
+          "action": "./kindleair.sh",
+          "params": "status"
+        },
+        {
+          "name": "Collect diagnostics",
+          "action": "./kindleair.sh",
+          "params": "diagnose"
+        }
+      ]
+    }
+  ]
+}

@@ -21,6 +21,26 @@
           "params": "stop"
         },
         {
+          "name": "Sleep behavior",
+          "items": [
+            {
+              "name": "Keep awake while running",
+              "action": "./kindleair.sh",
+              "params": "sleep-on"
+            },
+            {
+              "name": "Allow normal sleep",
+              "action": "./kindleair.sh",
+              "params": "sleep-off"
+            },
+            {
+              "name": "Show sleep setting",
+              "action": "./kindleair.sh",
+              "params": "sleep-status"
+            }
+          ]
+        },
+        {
           "name": "Status",
           "action": "./kindleair.sh",
           "params": "status"

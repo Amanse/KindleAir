@@ -60,3 +60,5 @@ with tempfile.TemporaryDirectory() as directory:
         check(runtime/name)
     print(f'{version}: metadata, shell syntax, helper hash and {len(seen)} ARM ELF files verified')
 subprocess.run(['python3', str(ROOT / 'tests/test_component.py')], check=True)
+
+subprocess.run(["python3", str(ROOT / "tests/test_sleep.py")], check=True)

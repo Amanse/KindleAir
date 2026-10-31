@@ -50,3 +50,9 @@ An early process wrapper caused the background audio helper to receive `/dev/nul
 ## Bluetooth pairing
 
 The pairing action asks `com.lab126.btfd` to enable Bluetooth and opens the firmware `bt_wizard_dialog` through `com.lab126.pillow`. KinAMP uses the same dialog. KindleAir does not replace the Bluetooth stack or implement its own pairing protocol.
+
+## Saved sleep behavior
+
+`keep-awake.conf` is a device-local 1/0 preference, defaulting to enabled when absent. KUAL changes apply immediately when the supervisor is running. An ownership marker under the temporary control directory records an inhibitor acquired from a clear firmware property. Stop releases only that owned inhibitor. The supervisor checks the saved preference and refreshes an enabled request every 30 seconds. No always-on wake service runs after Stop.
+
+Native LIPC calls explicitly clear `DBUS_SYSTEM_BUS_ADDRESS` so power and Bluetooth commands reach the firmware services, not the private discovery bus. This also fixes the earlier automatic sleep-inhibit request.

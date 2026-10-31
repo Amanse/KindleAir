@@ -8,7 +8,7 @@ Mac / iPhone / iPad ──AirPlay over Wi-Fi──> Kindle ──Bluetooth──
 
 KindleAir combines [Shairport Sync](https://github.com/mikebrady/shairport-sync) with the Kindle's native GStreamer `mixersink` audio output, following [KinAMP](https://github.com/kbarni/KinAMP)'s audio pipeline and Bluetooth pairing dialog.
 
-**Status:** working prototype, version **0.1.3**. Audible music playback was confirmed on a Kindle Basic 3 (10th generation) with JBL Live 770NC headphones. Other models and firmware versions need testing.
+**Status:** working prototype, version **0.1.4**. Audible music playback was confirmed on a Kindle Basic 3 (10th generation) with JBL Live 770NC headphones. Other models and firmware versions need testing.
 
 ## Requirements
 
@@ -42,7 +42,7 @@ To make a drag-and-drop installation ZIP from a checkout:
 python3 scripts/package.py
 ```
 
-Extract the resulting `dist/KindleAir-0.1.3.zip` onto the Kindle's USB storage root.
+Extract the resulting `dist/KindleAir-0.1.4.zip` onto the Kindle's USB storage root.
 
 ## Pair and play
 
@@ -56,6 +56,16 @@ The pairing action opens the firmware Bluetooth dialog used by KinAMP. It avoids
 
 KUAL also provides **Status** and **Collect diagnostics**. KindleAir starts on demand; it does not install a boot service. SSH is optional and only needed for development or debugging.
 
+## Sleep behavior
+
+Open **KUAL → KindleAir → Sleep behavior**:
+
+- **Keep awake while running** prevents automatic sleep during receiver operation.
+- **Allow normal sleep** releases KindleAir's sleep inhibitor and permits the normal firmware timeout.
+- **Show sleep setting** displays the saved choice.
+
+The default is Keep awake. Changes are saved for future sessions and apply immediately to a running receiver. While enabled, KindleAir checks the inhibitor every 30 seconds and reapplies it if cleared. Stop restores normal sleep when KindleAir acquired the inhibitor; it does not clear one already held by another application. Keeping the device awake uses more battery. The preference is stored locally as `extensions/kindleair/keep-awake.conf` and is excluded from release packages.
+
 ## Limitations
 
 - Classic AirPlay / RAOP audio only. No AirPlay 2, HomeKit or screen mirroring.
@@ -67,7 +77,7 @@ KUAL also provides **Status** and **Collect diagnostics**. KindleAir starts on d
 
 ## What it changes
 
-Persistent application files stay under `extensions/kindleair/`. While running, KindleAir extracts a private runtime under `/tmp`, starts private D-Bus and Avahi processes, and creates a `KINDLEAIR` firewall chain for incoming Wi-Fi TCP 5000, UDP 6001–6010 and UDP 5353. Stop removes that chain and the temporary runtime. It also requests the firmware sleep inhibitor when initially clear and releases that request on exit.
+Persistent application files stay under `extensions/kindleair/`. While running, KindleAir extracts a private runtime under `/tmp`, starts private D-Bus and Avahi processes, and creates a `KINDLEAIR` firewall chain for incoming Wi-Fi TCP 5000, UDP 6001–6010 and UDP 5353. Stop removes that chain and the temporary runtime. The saved Sleep behavior setting controls whether KindleAir requests the firmware sleep inhibitor; it releases inhibitors it acquired on Stop.
 
 To uninstall, Stop KindleAir and delete `extensions/kindleair/` over USB. Existing KUAL, KOReader and books remain in place.
 

@@ -1,4 +1,4 @@
-# KindleAir 0.1.3
+# KindleAir 0.1.4
 
 Classic AirPlay audio receiver → Kindle firmware mixer → paired Bluetooth headphones or speaker.
 
@@ -19,13 +19,23 @@ Local AirPlay discovery, RTSP connections, incoming music and audible Bluetooth 
 
 It starts on demand, not at boot. This is classic AirPlay audio; AirPlay 2, HomeKit and screen mirroring are not included. Bluetooth adds delay, so video lip sync and multiroom synchronization are not guaranteed.
 
+## Sleep behavior
+
+Open **KUAL → KindleAir → Sleep behavior**:
+
+- **Keep awake while running** prevents automatic sleep during receiver operation.
+- **Allow normal sleep** releases KindleAir's sleep inhibitor and permits the normal firmware timeout.
+- **Show sleep setting** displays the saved choice.
+
+The default is Keep awake. Changes are saved for future sessions and apply immediately to a running receiver. While enabled, KindleAir checks the inhibitor every 30 seconds and reapplies it if cleared. Stop restores normal sleep when KindleAir acquired the inhibitor; it does not clear one already held by another application. Keeping the device awake uses more battery. The preference is stored locally as `extensions/kindleair/keep-awake.conf` and is excluded from release packages.
+
 ## Installation and removal
 
 The persistent installation lives entirely in `extensions/kindleair/`. Existing KUAL and KOReader are required; KOReader's LuaJIT runs the firmware audio helper. The bundled runtime is extracted into a unique temporary directory while running. KindleAir uses a private D-Bus and Avahi process and temporarily opens Wi-Fi TCP 5000, UDP 6001–6010 and UDP 5353 through its own `KINDLEAIR` firewall chain. Stop removes those rules and the temporary runtime.
 
 No firmware flashing or system-library replacement is involved. The bundled Avahi uses a small local account-lookup helper so it can run without adding an `avahi` account to the Kindle. Shairport receives an explicit temporary metadata-pipe path to avoid a null-string startup crash in this package. The audio helper opens the PCM FIFO directly using `filesrc`, matching KinAMP.
 
-While running, KindleAir requests the firmware's sleep inhibitor when initially clear and releases its request on Stop. Long unattended operation and idle Bluetooth retention have not yet been tested.
+The saved Sleep behavior setting controls whether KindleAir requests the firmware sleep inhibitor. Stop releases an inhibitor acquired by KindleAir. Long unattended operation and idle Bluetooth retention have not yet been tested.
 
 To remove: Stop KindleAir, connect USB, then delete `extensions/kindleair/`.
 

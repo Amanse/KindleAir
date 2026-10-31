@@ -15,3 +15,6 @@ core.*
 *known_hosts*
 kindleair-ssh*
 *.pem
+
+# Device-specific sleep preference (saved by the KUAL menu).
+extensions/kindleair/keep-awake.conf*

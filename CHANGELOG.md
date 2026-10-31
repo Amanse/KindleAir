@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.4 — 2026-10-31
+
+- Route native power/Bluetooth LIPC commands to the firmware bus instead of the private discovery bus.
+- Add a saved KUAL Sleep behavior setting: Keep awake while running, Allow normal sleep, and Show sleep setting.
+- Apply changes immediately to running sessions and refresh an enabled inhibitor every 30 seconds.
+- Track inhibitor ownership so Stop releases only one acquired by KindleAir.
+- Exclude device preferences from source control and installation ZIPs.
+
 ## 0.1.3 — 2026-10-31
 
 Working AirPlay-to-Bluetooth playback confirmed on Kindle Basic 3 / firmware 5.18.1.1.1 with JBL Live 770NC headphones.

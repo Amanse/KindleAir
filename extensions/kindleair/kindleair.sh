@@ -2,6 +2,7 @@
 BASE=/mnt/us/extensions/kindleair
 STATE=/tmp/kindleair-control
 LOG="$BASE/kindleair.log"
+SLEEP_PREF="$BASE/keep-awake.conf"
 notice() {
  KA_MESSAGE=$(printf '%s' "$*" | tr ';' ',' | cut -c 1-25)
  eips 1 2 "KindleAir: $KA_MESSAGE" 2>/dev/null || :
@@ -18,6 +19,34 @@ alpine() {
  KA_BIN=$1; shift
  "$RT/lib/ld-musl-armhf.so.1" --library-path "$RT/lib:$RT/usr/lib" "$RT/$KA_BIN" "$@"
 }
+# An absent preference preserves the original keep-awake default.
+keep_awake_enabled() { [ ! -f "$SLEEP_PREF" ] || [ "$(cat "$SLEEP_PREF")" != 0 ]; }
+release_sleep_inhibit() {
+ [ -f "$STATE/sleep-owned" ] || return 0
+ native_lipc_set com.lab126.powerd preventScreenSaver 0 || return 1
+ rm -f "$STATE/sleep-owned"
+}
+apply_sleep_setting() {
+ if keep_awake_enabled; then
+  KA_SLEEP_CURRENT=$(native_lipc_get com.lab126.powerd preventScreenSaver 2>/dev/null) || return 1
+  case "$KA_SLEEP_CURRENT" in
+   0)
+    native_lipc_set com.lab126.powerd preventScreenSaver 1 || return 1
+    touch "$STATE/sleep-owned"
+    ;;
+   1) :;; # Do not claim an inhibitor that another app already held.
+   *) return 1;;
+  esac
+ else
+  release_sleep_inhibit
+ fi
+}
+save_sleep_setting() {
+ printf '%s\n' "$1" > "$SLEEP_PREF.new" && mv "$SLEEP_PREF.new" "$SLEEP_PREF" || return 1
+ if alive; then apply_sleep_setting || return 1; fi
+}
+native_lipc_get() { (unset DBUS_SYSTEM_BUS_ADDRESS; lipc-get-prop "$@"); }
+native_lipc_set() { (unset DBUS_SYSTEM_BUS_ADDRESS; lipc-set-prop "$@"); }
 diagnose() {
  {
   echo 'KindleAir diagnostics'; date; uname -srvm
@@ -27,9 +56,10 @@ diagnose() {
   echo 'Firmware mixer probe'; native_sink probe
   echo 'Selected audio properties'
   for prop in audioOutputConnected audioCurrentOutput; do
-   lipc-get-prop com.lab126.audiomgrd "$prop" 2>&1
+   native_lipc_get com.lab126.audiomgrd "$prop" 2>&1
   done
-  echo 'Power inhibit'; lipc-get-prop com.lab126.powerd preventScreenSaver 2>&1
+  echo 'Keep-awake preference'; if keep_awake_enabled; then echo enabled; else echo disabled; fi
+  echo 'Power inhibit'; native_lipc_get com.lab126.powerd preventScreenSaver 2>&1
   echo 'Audio tools'
   for tool in gst-launch-0.10 gst-launch-1.0 gst-inspect-0.10 gst-inspect-1.0 aplay lipc-probe; do command -v "$tool"; done
   echo 'Network addresses'; ip -4 addr show 2>/dev/null || ifconfig
@@ -64,18 +94,29 @@ case "${1:-status}" in
   else notice 'stopped; see kindleair.log'; fi
   ;;
  bluetooth)
-  lipc-set-prop -s com.lab126.btfd BTenable '1:1' || { notice 'Bluetooth enable failed'; exit 1; }
-  lipc-set-prop -s com.lab126.pillow customDialog '{"name":"bt_wizard_dialog","clientParams":{"show":true,"winmgrModal":true,"replySrc":""}}' || { notice 'Bluetooth dialog unavailable'; exit 1; }
+  native_lipc_set -s com.lab126.btfd BTenable '1:1' || { notice 'Bluetooth enable failed'; exit 1; }
+  native_lipc_set -s com.lab126.pillow customDialog '{"name":"bt_wizard_dialog","clientParams":{"show":true,"winmgrModal":true,"replySrc":""}}' || { notice 'Bluetooth dialog unavailable'; exit 1; }
+  ;;
+ sleep-on)
+  save_sleep_setting 1 || { notice 'sleep setting failed'; exit 1; }
+  notice 'keep awake enabled'
+  ;;
+ sleep-off)
+  save_sleep_setting 0 || { notice 'sleep setting failed'; exit 1; }
+  notice 'normal sleep allowed'
+  ;;
+ sleep-status)
+  if keep_awake_enabled; then notice 'keep awake is ON'; else notice 'keep awake is OFF'; fi
   ;;
  diagnose) diagnose;;
  run)
   echo $$ > "$STATE/pid"
-  RT=''; KA_DAEMONS=''; KA_COMPONENTS=''; KA_INHIBIT=0; KA_FIREWALL=0
+  RT=''; KA_DAEMONS=''; KA_COMPONENTS=''; KA_FIREWALL=0
   cleanup() {
    trap '' TERM INT HUP
    for p in $KA_DAEMONS; do kill "$p" 2>/dev/null || :; done
    for p in $KA_DAEMONS; do wait "$p" 2>/dev/null || :; done
-   [ "$KA_INHIBIT" = 0 ] || lipc-set-prop com.lab126.powerd preventScreenSaver 0 2>/dev/null
+   release_sleep_inhibit || echo "Warning: could not release sleep inhibitor"
    if [ "$KA_FIREWALL" = 1 ]; then
     iptables -D INPUT -i wlan0 -j KINDLEAIR 2>/dev/null || :
     iptables -F KINDLEAIR 2>/dev/null || :
@@ -104,7 +145,7 @@ case "${1:-status}" in
    done
   }
   for name in dbus avahi sink receiver; do rm -f "$BASE/$name.log" "$BASE/$name.exit"; done
-  echo 'KindleAir 0.1.3 / Shairport Sync 5.5.1 / classic AirPlay'
+  echo 'KindleAir 0.1.4 / Shairport Sync 5.5.1 / classic AirPlay'
   native_sink probe || fail 'firmware mixer unavailable; collect diagnostics'
   RT=$(mktemp -d /tmp/kindleair.XXXXXX) || fail 'cannot allocate runtime'
   tar -xzf "$BASE/runtime.tar.gz" -C "$RT" || fail 'cannot extract runtime'
@@ -153,17 +194,21 @@ EOF
   SINK_PID=$!; KA_DAEMONS="$KA_DAEMONS $SINK_PID"; KA_COMPONENTS="$KA_COMPONENTS $SINK_PID:sink"
   "$BASE/component.sh" receiver "$BASE/alpine.sh" "$RT" usr/bin/shairport-sync -c "$BASE/shairport-sync.conf" --metadata-pipename="$RT/metadata" -v > "$RT/audio" &
   AIR_PID=$!; KA_DAEMONS="$KA_DAEMONS $AIR_PID"; KA_COMPONENTS="$KA_COMPONENTS $AIR_PID:receiver"
-  if [ "$(lipc-get-prop com.lab126.powerd preventScreenSaver 2>/dev/null)" = 0 ]; then
-   if lipc-set-prop com.lab126.powerd preventScreenSaver 1; then KA_INHIBIT=1; fi
-  fi
+  apply_sleep_setting || echo "Warning: could not apply sleep setting"
   sleep 3
   check_components
   touch "$STATE/ready"
   notice 'running; select KindleAir in AirPlay'
+  KA_SLEEP_TICKS=0
   while :; do
    check_components
+   KA_SLEEP_TICKS=$((KA_SLEEP_TICKS + 1))
+   if [ "$KA_SLEEP_TICKS" -ge 15 ]; then
+    apply_sleep_setting || echo "Warning: could not refresh sleep setting"
+    KA_SLEEP_TICKS=0
+   fi
    sleep 2
   done
   ;;
- *) echo 'Usage: kindleair.sh start|stop|status|bluetooth|diagnose'; exit 2;;
+ *) echo 'Usage: kindleair.sh start|stop|status|bluetooth|sleep-on|sleep-off|sleep-status|diagnose'; exit 2;;
 esac

@@ -56,9 +56,10 @@ with tempfile.TemporaryDirectory() as directory:
                 target = next((p for p in [runtime/'lib'/name, runtime/'usr/lib'/name] if p.exists()), None)
                 assert target is not None, (path, name)
                 check(target)
-    for name in ['usr/bin/shairport-sync', 'usr/bin/dbus-daemon', 'usr/sbin/avahi-daemon', manifest['file']]:
+    for name in ['usr/bin/shairport-sync', 'usr/bin/dbus-daemon', 'usr/bin/dbus-send', 'usr/sbin/avahi-daemon', manifest['file']]:
         check(runtime/name)
     print(f'{version}: metadata, shell syntax, helper hash and {len(seen)} ARM ELF files verified')
 subprocess.run(['python3', str(ROOT / 'tests/test_component.py')], check=True)
 
 subprocess.run(["python3", str(ROOT / "tests/test_sleep.py")], check=True)
+subprocess.run(["python3", str(ROOT / "tests/test_power_mode.py")], check=True)

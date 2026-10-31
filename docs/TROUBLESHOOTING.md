@@ -54,3 +54,7 @@ No SSH key or credentials are included in this repository. SSH is not needed for
 ## Remove or recover
 
 Normal shutdown is KUAL → KindleAir → Stop AirPlay receiver. It terminates its children, removes its firewall chain and deletes its extracted runtime. If a crash or forced termination leaves stale state, collect the logs first; a device reboot clears temporary runtime and in-memory firewall state. This prototype does not install a boot service.
+
+## Low-power audio or restoration
+
+If a model stutters in low-power mode, choose **Restore normal power** and compare playback. Adaptive CPU scaling can differ across firmware and hardware. Wi-Fi and Bluetooth remain enabled in either mode. Stop restores hardware settings changed by the mode. If the process was forcibly killed, try Restore normal power before deleting temporary state; a reboot also resets temporary kernel governor state. Battery gains depend on the starting brightness, CPU governor and streaming workload.

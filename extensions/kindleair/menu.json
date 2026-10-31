@@ -16,6 +16,17 @@
           "params": "start"
         },
         {
+          "name": "Start AirPlay (low power)",
+          "action": "./kindleair.sh",
+          "params": "start-low",
+          "exitmenu": true
+        },
+        {
+          "name": "Restore normal power",
+          "action": "./kindleair.sh",
+          "params": "normal-power"
+        },
+        {
           "name": "Stop AirPlay receiver",
           "action": "./kindleair.sh",
           "params": "stop"

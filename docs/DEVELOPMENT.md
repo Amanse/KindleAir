@@ -5,7 +5,7 @@
 ```text
 extensions/kindleair/   KUAL extension and bundled runtime
 scripts/               Package, validate and rebuild tools
-tests/                 Process lifecycle, input forwarding and sleep-setting regression checks
+tests/                 Process lifecycle, input forwarding and sleep-setting and low-power restoration regression checks
 docs/                  Architecture, troubleshooting and build notes
 ```
 
@@ -20,7 +20,7 @@ python3 scripts/validate.py
 python3 scripts/package.py
 ```
 
-Validation checks shell syntax, JSON/XML metadata, ARM ELF architecture and runtime dependency closure, the helper's SHA-256 hash, process input/output, error, exit and shutdown behavior, plus sleep preference persistence and inhibitor ownership. These checks do not replace an on-device audio test. The working build was separately tested on the Kindle; see the README compatibility table.
+Validation checks shell syntax, JSON/XML metadata, ARM ELF architecture and runtime dependency closure, the helper's SHA-256 hash, process input/output, error, exit and shutdown behavior, plus sleep preference persistence, inhibitor ownership and low-power hardware restoration. These checks do not replace an on-device audio test. The working build was separately tested on the Kindle; see the README compatibility table.
 
 ## Build the Avahi account helper
 

@@ -11,7 +11,7 @@ import urllib.request
 
 ROOT = Path(__file__).resolve().parents[1]
 BASE = ROOT / 'extensions/kindleair'
-SELECTED = ['lib', 'usr/lib', 'usr/bin/shairport-sync', 'usr/bin/dbus-daemon', 'usr/sbin/avahi-daemon']
+SELECTED = ['lib', 'usr/lib', 'usr/bin/shairport-sync', 'usr/bin/dbus-daemon', 'usr/bin/dbus-send', 'usr/sbin/avahi-daemon']
 
 def wanted(name):
     return any(name == path or name.startswith(path + '/') for path in SELECTED)

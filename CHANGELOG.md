@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.0-beta.1 — 2026-10-31
+
+- Introduce optional KUAL low-power AirPlay mode and live restoration to normal power.
+- Use adaptive CPU scaling when supported, turn off the frontlight, reduce health polling and quiet receiver diagnostics.
+- Restore original CPU/frontlight settings on exit or Stop, respecting later manual changes.
+- Keep Wi-Fi, Bluetooth, the firmware interface and KUAL available; do not impose a CPU frequency cap.
+- Add hardware snapshot/restoration tests and the matching bundled D-Bus client for live logging control.
+- Confirm normal playback on JBL Clip 4 in low-power mode, live mode switching, hardware restoration and responsive Stop on the target Kindle.
+- Mark the project Beta and clarify intended compatibility with Bluetooth-capable jailbroken Kindles and the exact tested hardware.
+
 ## 0.1.4 — 2026-10-31
 
 - Route native power/Bluetooth LIPC commands to the firmware bus instead of the private discovery bus.

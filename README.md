@@ -8,7 +8,7 @@ Mac / iPhone / iPad ──AirPlay over Wi-Fi──> Kindle ──Bluetooth──
 
 KindleAir combines [Shairport Sync](https://github.com/mikebrady/shairport-sync) with the Kindle's native GStreamer `mixersink` audio output, following [KinAMP](https://github.com/kbarni/KinAMP)'s audio pipeline and Bluetooth pairing dialog.
 
-**Status:** working prototype, version **0.1.4**. Audible music playback was confirmed on a Kindle Basic 3 (10th generation) with JBL Live 770NC headphones. Other models and firmware versions need testing.
+**Status: Beta**, version **0.2.0-beta.1**. KindleAir should work on jailbroken Kindles with Bluetooth audio support, KUAL and KOReader, where the firmware provides the compatible native audio mixer. Playback is confirmed on a Kindle Basic 3 (10th generation); other models and firmware versions have not yet been verified.
 
 ## Requirements
 
@@ -24,8 +24,8 @@ KindleAir combines [Shairport Sync](https://github.com/mikebrady/shairport-sync)
 | Kernel / CPU | Linux 4.1.15, ARMv7 Cortex-A9 |
 | Firmware audio | GStreamer 0.10, `mixersink` |
 | AirPlay receiver | Shairport Sync 5.5.1, classic AirPlay |
-| Bluetooth endpoint | JBL Live 770NC |
-| Confirmed | Discovery, RTSP connection, incoming audio, audible output, Stop/restart and firewall cleanup |
+| Bluetooth endpoints | JBL Live 770NC; JBL Clip 4 (low-power beta) |
+| Confirmed | Discovery, RTSP connection, audible output, sleep controls, low-power playback and CPU/frontlight restoration |
 
 ## Install
 
@@ -42,7 +42,7 @@ To make a drag-and-drop installation ZIP from a checkout:
 python3 scripts/package.py
 ```
 
-Extract the resulting `dist/KindleAir-0.1.4.zip` onto the Kindle's USB storage root.
+Extract the resulting `dist/KindleAir-0.2.0-beta.1.zip` onto the Kindle's USB storage root.
 
 ## Pair and play
 
@@ -55,6 +55,21 @@ Extract the resulting `dist/KindleAir-0.1.4.zip` onto the Kindle's USB storage r
 The pairing action opens the firmware Bluetooth dialog used by KinAMP. It avoids VoiceView's setup flow and can be useful when the normal Bluetooth settings menu is hidden.
 
 KUAL also provides **Status** and **Collect diagnostics**. KindleAir starts on demand; it does not install a boot service. SSH is optional and only needed for development or debugging.
+
+## Optional low-power AirPlay mode
+
+Choose **KUAL → KindleAir → Start AirPlay (low power)**. You can select it while the receiver is already running; the stream does not need to restart.
+
+Low-power mode:
+
+- Uses the adaptive `ondemand` CPU governor when supported, instead of a fixed `performance` governor. The CPU can still boost when audio needs it; no frequency cap is imposed.
+- Turns off the frontlight on entry.
+- Quiets receiver diagnostics and checks component health every 10 seconds instead of every 2 seconds.
+- Keeps Wi-Fi, Bluetooth, the firmware interface and KUAL available.
+
+Choose **Restore normal power** to leave the receiver running with the original CPU/light settings. **Stop AirPlay receiver** also restores them. Manual governor or brightness changes made after entering the mode take precedence during restoration. The mode lasts for the current receiver session; the regular Start action uses normal power settings for a new session.
+
+This reduces avoidable activity but does not put the Kindle into deep sleep: AirPlay needs Wi-Fi, decoding and Bluetooth transmission to remain active. Battery-life improvement has not been quantified in a controlled test. Unsupported hardware controls are skipped, so behavior can differ across Kindle models.
 
 ## Sleep behavior
 
@@ -72,7 +87,7 @@ The default is Keep awake. Changes are saved for future sessions and apply immed
 - Bluetooth adds latency. Video lip sync and synchronized multiroom playback are not validated.
 - Long unattended operation, idle Bluetooth retention and battery consumption have not been measured.
 - The receiver accepts connections without an AirPlay password from reachable devices on the local Wi-Fi network.
-- This prototype runs its bundled services with the invoking KUAL user's privileges, normally root.
+- This beta runs its bundled services with the invoking KUAL user's privileges, normally root.
 - Stop the receiver before USB file-transfer mode. Wi-Fi client isolation can prevent discovery or playback.
 
 ## What it changes

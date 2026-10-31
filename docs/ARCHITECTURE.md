@@ -56,3 +56,9 @@ The pairing action asks `com.lab126.btfd` to enable Bluetooth and opens the firm
 `keep-awake.conf` is a device-local 1/0 preference, defaulting to enabled when absent. KUAL changes apply immediately when the supervisor is running. An ownership marker under the temporary control directory records an inhibitor acquired from a clear firmware property. Stop releases only that owned inhibitor. The supervisor checks the saved preference and refreshes an enabled request every 30 seconds. No always-on wake service runs after Stop.
 
 Native LIPC calls explicitly clear `DBUS_SYSTEM_BUS_ADDRESS` so power and Bluetooth commands reach the firmware services, not the private discovery bus. This also fixes the earlier automatic sleep-inhibit request.
+
+## Low-power sessions
+
+`power-mode.sh` snapshots the current CPU governor and frontlight level in the temporary control directory. Where available, it replaces `performance` or `userspace` with `ondemand`, leaves already power-saving governors alone, turns off the frontlight, and uses the bundled `dbus-send` client to lower receiver verbosity. Restoration only changes hardware values still at the mode's applied settings; later user adjustments are preserved. The governor controls frequency dynamically within the existing limits.
+
+The supervisor polls health every 10 seconds in this mode, with an interruptible wait so Stop remains responsive. Its sleep-inhibit refresh remains approximately every 30 seconds. Wi-Fi, Bluetooth, firmware UI and audio services remain running. No boot configuration, CPU frequency limits, radio power setting or firmware service is changed. The mode is session-only and is restored during normal shutdown or failure cleanup. A forced kill can bypass cleanup; reboot or the Restore normal power action can recover retained snapshots.

@@ -12,7 +12,7 @@ output.parent.mkdir(parents=True, exist_ok=True)
 # Deliberate allowlist: only release files, never a copied device log or key.
 files = ['README.md', 'LICENSE', 'alpine.sh', 'avahi-accounts.c', 'component.sh',
          'config.xml', 'kindleair.sh', 'local-build.json', 'menu.json', 'packages.json',
-         'runtime.tar.gz', 'shairport-sync.conf', 'sink.lua', 'sink.sh']
+         'runtime.tar.gz', 'power-mode.sh', 'shairport-sync.conf', 'sink.lua', 'sink.sh']
 with zipfile.ZipFile(output, 'w', zipfile.ZIP_DEFLATED) as archive:
     archive.write(ROOT / 'README.md', 'README.md')
     for name in ['LICENSE', 'CHANGELOG.md', 'THIRD_PARTY.md']:

@@ -1,12 +1,14 @@
-# KindleAir 0.1.4
+# KindleAir 0.2.0-beta.1
 
 Classic AirPlay audio receiver → Kindle firmware mixer → paired Bluetooth headphones or speaker.
+
+**Status: Beta.** Should work on jailbroken Kindles with Bluetooth audio support, KUAL and KOReader where a compatible firmware mixer is available. Other models are not yet verified.
 
 ## Verified on this Kindle
 
 Kindle Basic 3 (10th generation), firmware 5.18.1.1.1, Linux 4.1.15. Shairport Sync 5.5.1 runs from a bundled ARMv7 musl runtime. Audio uses the same signed 16-bit stereo, 44.1 kHz PCM / firmware GStreamer 0.10 mixersink approach as KinAMP.
 
-Local AirPlay discovery, RTSP connections, incoming music and audible Bluetooth output to JBL Live 770NC headphones were confirmed on 2026-10-31. Stop/restart and removal of KindleAir's firewall chain were also checked.
+Local AirPlay discovery, RTSP connections, incoming music and audible Bluetooth output to JBL Live 770NC headphones were confirmed on 2026-10-31. Stop/restart and removal of KindleAir's firewall chain were also checked. Low-power playback was confirmed with JBL Clip 4; live mode switching, CPU/frontlight restoration and a one-second Stop were checked in the beta.
 
 ## Use
 
@@ -18,6 +20,10 @@ Local AirPlay discovery, RTSP connections, incoming music and audible Bluetooth 
 6. Use Stop AirPlay receiver before reconnecting USB storage.
 
 It starts on demand, not at boot. This is classic AirPlay audio; AirPlay 2, HomeKit and screen mirroring are not included. Bluetooth adds delay, so video lip sync and multiroom synchronization are not guaranteed.
+
+## Low-power mode
+
+KUAL → KindleAir → **Start AirPlay (low power)** enters a session-only mode with adaptive CPU scaling when available, frontlight off, quiet receiver logging and fewer supervisor wakeups. It keeps Wi-Fi, Bluetooth and KUAL available. **Restore normal power** restores the saved governor and brightness without stopping the receiver; Stop restores them too. Later manual brightness/governor changes are respected. This is not deep sleep, and battery-life improvement has not been quantified.
 
 ## Sleep behavior
 

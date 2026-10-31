@@ -59,6 +59,7 @@ diagnose() {
    native_lipc_get com.lab126.audiomgrd "$prop" 2>&1
   done
   echo 'Keep-awake preference'; if keep_awake_enabled; then echo enabled; else echo disabled; fi
+  echo 'Power mode'; "$BASE/power-mode.sh" status
   echo 'Power inhibit'; native_lipc_get com.lab126.powerd preventScreenSaver 2>&1
   echo 'Audio tools'
   for tool in gst-launch-0.10 gst-launch-1.0 gst-inspect-0.10 gst-inspect-1.0 aplay lipc-probe; do command -v "$tool"; done
@@ -72,11 +73,17 @@ diagnose() {
  notice 'diagnostics saved'
 }
 case "${1:-status}" in
- start)
+ start|start-low)
+  KA_START_MODE=normal
+  [ "$1" != start-low ] || KA_START_MODE=low
+  if alive && [ "$KA_START_MODE" = low ]; then
+   "$BASE/power-mode.sh" enter || { notice 'low power setup failed'; exit 1; }
+   notice 'low power enabled'; exit 0
+  fi
   if alive; then notice 'already running'; exit 0; fi
   [ -x /mnt/us/koreader/luajit ] || { notice 'KOReader LuaJIT missing'; exit 1; }
   mkdir "$STATE" 2>/dev/null || { notice 'busy or stale state; Stop first'; exit 1; }
-  nohup sh "$BASE/kindleair.sh" run > "$LOG" 2>&1 < /dev/null &
+  nohup sh "$BASE/kindleair.sh" run "$KA_START_MODE" > "$LOG" 2>&1 < /dev/null &
   notice 'starting; check Status in 10 seconds'
   ;;
  stop)
@@ -85,11 +92,16 @@ case "${1:-status}" in
    i=0; while alive && [ "$i" -lt 10 ]; do sleep 1; i=$((i+1)); done
    if alive; then notice 'shutdown pending; see log'; exit 1; fi
   fi
-  rm -f "$STATE/pid" "$STATE/ready"; rmdir "$STATE" 2>/dev/null || :
+  rm -f "$STATE/pid" "$STATE/ready" "$STATE/runtime"; rmdir "$STATE" 2>/dev/null || :
   notice 'stopped'
   ;;
+ normal-power)
+  "$BASE/power-mode.sh" restore || { notice 'power restore failed'; exit 1; }
+  notice 'normal power restored'
+  ;;
  status)
-  if alive && [ -f "$STATE/ready" ]; then notice 'running as KindleAir (AirPlay 1)'
+  if alive && [ -f "$STATE/ready" ] && [ -f "$STATE/low-power" ]; then notice 'running - low power'
+  elif alive && [ -f "$STATE/ready" ]; then notice 'running as KindleAir (AirPlay 1)'
   elif alive; then notice 'starting; see kindleair.log'
   else notice 'stopped; see kindleair.log'; fi
   ;;
@@ -110,12 +122,15 @@ case "${1:-status}" in
   ;;
  diagnose) diagnose;;
  run)
+  KA_RUN_MODE=${2:-normal}
   echo $$ > "$STATE/pid"
-  RT=''; KA_DAEMONS=''; KA_COMPONENTS=''; KA_FIREWALL=0
+  RT=''; KA_DAEMONS=''; KA_COMPONENTS=''; KA_FIREWALL=0; KA_TIMER_PID=''
   cleanup() {
    trap '' TERM INT HUP
+   if [ -n "$KA_TIMER_PID" ]; then kill "$KA_TIMER_PID" 2>/dev/null || :; wait "$KA_TIMER_PID" 2>/dev/null || :; fi
    for p in $KA_DAEMONS; do kill "$p" 2>/dev/null || :; done
    for p in $KA_DAEMONS; do wait "$p" 2>/dev/null || :; done
+   "$BASE/power-mode.sh" restore cleanup || echo "Warning: could not restore power settings"
    release_sleep_inhibit || echo "Warning: could not release sleep inhibitor"
    if [ "$KA_FIREWALL" = 1 ]; then
     iptables -D INPUT -i wlan0 -j KINDLEAIR 2>/dev/null || :
@@ -123,7 +138,7 @@ case "${1:-status}" in
     iptables -X KINDLEAIR 2>/dev/null || :
    fi
    [ -z "$RT" ] || rm -rf "$RT"
-   rm -f "$STATE/pid" "$STATE/ready"; rmdir "$STATE" 2>/dev/null || :
+   rm -f "$STATE/pid" "$STATE/ready" "$STATE/runtime"; rmdir "$STATE" 2>/dev/null || :
   }
   trap 'exit 0' TERM INT HUP
   trap cleanup EXIT
@@ -145,10 +160,11 @@ case "${1:-status}" in
    done
   }
   for name in dbus avahi sink receiver; do rm -f "$BASE/$name.log" "$BASE/$name.exit"; done
-  echo 'KindleAir 0.1.4 / Shairport Sync 5.5.1 / classic AirPlay'
+  echo 'KindleAir 0.2.0-beta.1 / Shairport Sync 5.5.1 / classic AirPlay'
   native_sink probe || fail 'firmware mixer unavailable; collect diagnostics'
   RT=$(mktemp -d /tmp/kindleair.XXXXXX) || fail 'cannot allocate runtime'
   tar -xzf "$BASE/runtime.tar.gz" -C "$RT" || fail 'cannot extract runtime'
+  printf '%s\n' "$RT" > "$STATE/runtime"
   export DBUS_SYSTEM_BUS_ADDRESS="unix:path=$RT/bus"
   cat > "$RT/dbus.conf" <<EOF
 <busconfig>
@@ -197,18 +213,25 @@ EOF
   apply_sleep_setting || echo "Warning: could not apply sleep setting"
   sleep 3
   check_components
+  if [ "$KA_RUN_MODE" = low ]; then
+   "$BASE/power-mode.sh" enter || fail 'low power setup failed'
+  fi
   touch "$STATE/ready"
   notice 'running; select KindleAir in AirPlay'
-  KA_SLEEP_TICKS=0
+  KA_SLEEP_SECONDS=0
   while :; do
    check_components
-   KA_SLEEP_TICKS=$((KA_SLEEP_TICKS + 1))
-   if [ "$KA_SLEEP_TICKS" -ge 15 ]; then
+   if [ -f "$STATE/low-power" ]; then KA_POLL_SECONDS=10; else KA_POLL_SECONDS=2; fi
+   if [ "$KA_SLEEP_SECONDS" -ge 30 ]; then
     apply_sleep_setting || echo "Warning: could not refresh sleep setting"
-    KA_SLEEP_TICKS=0
+    KA_SLEEP_SECONDS=0
    fi
-   sleep 2
+   sleep "$KA_POLL_SECONDS" &
+   KA_TIMER_PID=$!
+   wait "$KA_TIMER_PID"
+   KA_TIMER_PID=''
+   KA_SLEEP_SECONDS=$((KA_SLEEP_SECONDS + KA_POLL_SECONDS))
   done
   ;;
- *) echo 'Usage: kindleair.sh start|stop|status|bluetooth|sleep-on|sleep-off|sleep-status|diagnose'; exit 2;;
+ *) echo 'Usage: kindleair.sh start|start-low|stop|normal-power|status|bluetooth|sleep-on|sleep-off|sleep-status|diagnose'; exit 2;;
 esac

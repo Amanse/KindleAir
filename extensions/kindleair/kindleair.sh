@@ -28,7 +28,7 @@ release_sleep_inhibit() {
  rm -f "$STATE/sleep-owned"
 }
 apply_sleep_setting() {
- if keep_awake_enabled; then
+ if keep_awake_enabled || "$BASE/idle-control.sh" enabled; then
   KA_SLEEP_CURRENT=$(native_lipc_get com.lab126.powerd preventScreenSaver 2>/dev/null) || return 1
   case "$KA_SLEEP_CURRENT" in
    0)
@@ -57,6 +57,14 @@ save_power_setting() {
 }
 native_lipc_get() { (unset DBUS_SYSTEM_BUS_ADDRESS; lipc-get-prop "$@"); }
 native_lipc_set() { (unset DBUS_SYSTEM_BUS_ADDRESS; lipc-set-prop "$@"); }
+request_idle_sleep() {
+ # Respect other applications and never toggle an already-inactive Kindle awake.
+ if [ "$(native_lipc_get com.lab126.powerd preventScreenSaver 2>/dev/null)" = 0 ] && \
+    [ "$(native_lipc_get com.lab126.powerd state 2>/dev/null)" = active ]; then
+  echo 'Idle timer: receiver stopped; requesting firmware sleep'
+  native_lipc_set com.lab126.powerd powerButton 1 || echo 'Warning: firmware sleep request failed'
+ else echo 'Idle timer: receiver stopped; sleep inhibited elsewhere or device already inactive'; fi
+}
 diagnose() {
  {
   echo 'KindleAir diagnostics'; date; uname -srvm
@@ -68,6 +76,8 @@ diagnose() {
   for prop in audioOutputConnected audioCurrentOutput; do
    native_lipc_get com.lab126.audiomgrd "$prop" 2>&1
   done
+  echo 'Idle sleep minutes'; "$BASE/idle-control.sh" status
+  echo 'Idle telemetry'; cat "$STATE/media-state" "$STATE/idle-status" 2>/dev/null
   echo 'Keep-awake preference'; if keep_awake_enabled; then echo enabled; else echo disabled; fi
   echo 'Default power mode'; preferred_power_mode
   echo 'Power mode'; "$BASE/power-mode.sh" status
@@ -137,16 +147,35 @@ case "${1:-status}" in
   ;;
  sleep-off)
   save_sleep_setting 0 || { notice 'sleep setting failed'; exit 1; }
-  notice 'normal sleep allowed'
+  if "$BASE/idle-control.sh" enabled; then notice 'idle timer controls sleep'; else notice 'normal sleep allowed'; fi
   ;;
  sleep-status)
-  if keep_awake_enabled; then notice 'keep awake is ON'; else notice 'keep awake is OFF'; fi
+  if "$BASE/idle-control.sh" enabled; then notice 'idle timer controls sleep'
+  elif keep_awake_enabled; then notice 'keep awake is ON'; else notice 'keep awake is OFF'; fi
+  ;;
+ resync)
+  alive && [ -f "$STATE/ready" ] || { notice 'start receiver first'; exit 1; }
+  rm -f "$STATE/resync.done"
+  : > "$STATE/resync.request"
+  KA_RESYNC_WAIT=0
+  while [ ! -f "$STATE/resync.done" ] && [ "$KA_RESYNC_WAIT" -lt 8 ]; do sleep 1; KA_RESYNC_WAIT=$((KA_RESYNC_WAIT + 1)); done
+  [ -f "$STATE/resync.done" ] || { notice 'resync pending - see log'; exit 1; }
+  notice 'audio queue resynced'
+  ;;
+ idle-minutes)
+  "$BASE/idle-control.sh" set "${2:-}" || { notice 'invalid idle minutes'; exit 1; }
+  if alive; then apply_sleep_setting || { notice 'sleep setting failed'; exit 1; }; fi
+  if [ "$2" = 0 ]; then notice 'idle sleep timer OFF'; else notice "idle sleep: $2 minutes"; fi
+  ;;
+ idle-status)
+  KA_IDLE_MINUTES=$("$BASE/idle-control.sh" status)
+  if [ "$KA_IDLE_MINUTES" = 0 ]; then notice 'idle sleep timer OFF'; else notice "idle sleep: $KA_IDLE_MINUTES minutes"; fi
   ;;
  diagnose) diagnose;;
  run)
   KA_RUN_MODE=${2:-normal}
   echo $$ > "$STATE/pid"
-  RT=''; KA_DAEMONS=''; KA_COMPONENTS=''; KA_FIREWALL=0; KA_TIMER_PID=''
+  RT=''; KA_DAEMONS=''; KA_COMPONENTS=''; KA_FIREWALL=0; KA_TIMER_PID=''; KA_SLEEP_ON_EXIT=0
   cleanup() {
    trap '' TERM INT HUP
    if [ -n "$KA_TIMER_PID" ]; then kill "$KA_TIMER_PID" 2>/dev/null || :; wait "$KA_TIMER_PID" 2>/dev/null || :; fi
@@ -160,7 +189,10 @@ case "${1:-status}" in
     iptables -X KINDLEAIR 2>/dev/null || :
    fi
    [ -z "$RT" ] || rm -rf "$RT"
-   rm -f "$STATE/pid" "$STATE/ready" "$STATE/runtime"; rmdir "$STATE" 2>/dev/null || :
+   rm -f "$STATE/pid" "$STATE/ready" "$STATE/runtime" "$STATE/media-state" "$STATE/media-state.new" \
+    "$STATE/resync.request" "$STATE/resync.done" "$STATE/resync.done.new" "$STATE/idle-reset" "$STATE/idle-status"
+   rmdir "$STATE" 2>/dev/null || :
+   if [ "$KA_SLEEP_ON_EXIT" = 1 ]; then request_idle_sleep; fi
   }
   trap 'exit 0' TERM INT HUP
   trap cleanup EXIT
@@ -182,7 +214,7 @@ case "${1:-status}" in
    done
   }
   for name in dbus avahi sink receiver; do rm -f "$BASE/$name.log" "$BASE/$name.exit"; done
-  echo 'KindleAir 0.2.0-beta.2 / Shairport Sync 5.5.1 / classic AirPlay'
+  echo 'KindleAir 0.2.0-beta.3 / Shairport Sync 5.5.1 / classic AirPlay'
   native_sink probe || fail 'firmware mixer unavailable; collect diagnostics'
   RT=$(mktemp -d /tmp/kindleair.XXXXXX) || fail 'cannot allocate runtime'
   tar -xzf "$BASE/runtime.tar.gz" -C "$RT" || fail 'cannot extract runtime'
@@ -243,6 +275,13 @@ EOF
   KA_SLEEP_SECONDS=0
   while :; do
    check_components
+   "$BASE/idle-control.sh" check
+   KA_IDLE_RESULT=$?
+   if [ "$KA_IDLE_RESULT" = 10 ]; then
+    echo 'Idle timer expired: restoring settings and stopping receiver'
+    KA_SLEEP_ON_EXIT=1
+    exit 0
+   fi
    if [ -f "$STATE/low-power" ]; then KA_POLL_SECONDS=10; else KA_POLL_SECONDS=2; fi
    if [ "$KA_SLEEP_SECONDS" -ge 30 ]; then
     apply_sleep_setting || echo "Warning: could not refresh sleep setting"
@@ -255,5 +294,5 @@ EOF
    KA_SLEEP_SECONDS=$((KA_SLEEP_SECONDS + KA_POLL_SECONDS))
   done
   ;;
- *) echo 'Usage: kindleair.sh start|start-low|stop|normal-power|power-low|power-normal|power-status|status|bluetooth|sleep-on|sleep-off|sleep-status|diagnose'; exit 2;;
+ *) echo 'Usage: kindleair.sh start|start-low|stop|normal-power|power-low|power-normal|power-status|status|bluetooth|sleep-on|sleep-off|sleep-status|resync|idle-minutes MINUTES|idle-status|diagnose'; exit 2;;
 esac

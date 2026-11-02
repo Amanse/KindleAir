@@ -17,7 +17,7 @@ The receiver and discovery tools are ARMv7 musl binaries from Alpine Linux. `alp
 
 The audio helper is different: `sink.sh` launches KOReader's LuaJIT, and `sink.lua` loads the **firmware's** GStreamer library. It probes GStreamer 0.10 first, then 1.0, and uses the matching raw audio caps. Only 0.10 has been tested on the target Kindle. This separation keeps the bundled musl libraries out of the firmware mixer process.
 
-`filesrc` opens the temporary PCM FIFO directly. This follows KinAMP's pipeline and avoids depending on standard input surviving asynchronous shell wrappers.
+`sink.lua` opens the temporary PCM FIFO explicitly and gives its descriptor to `fdsrc`. Interruptible fdsrc polling allows mixer resets even with a paused sender. A held O_RDWR descriptor prevents SIGPIPE while the pipeline resets. Firmware audio output still uses the KinAMP-inspired raw-PCM mixer path.
 
 ## Lifecycle
 
@@ -45,7 +45,7 @@ The target firmware drops unsolicited incoming Wi-Fi connections. KindleAir adds
 
 ### Audio input
 
-An early process wrapper caused the background audio helper to receive `/dev/null` on stdin. The working implementation opens the FIFO directly with GStreamer `filesrc`; the wrapper also now explicitly preserves inherited input through descriptor 3. A pipe-forwarding regression check was run on the Kindle's own shell.
+An early process wrapper caused the background audio helper to receive `/dev/null` on stdin. The initial working implementation used GStreamer `filesrc`; the resync implementation now opens the FIFO explicitly and uses interruptible `fdsrc`; the wrapper also now explicitly preserves inherited input through descriptor 3. A pipe-forwarding regression check was run on the Kindle's own shell.
 
 ## Bluetooth pairing
 
@@ -62,3 +62,11 @@ Native LIPC calls explicitly clear `DBUS_SYSTEM_BUS_ADDRESS` so power and Blueto
 `power-mode.sh` snapshots the current CPU governor and frontlight level in the temporary control directory. Where available, it replaces `performance` or `userspace` with `ondemand`, leaves already power-saving governors alone, turns off the frontlight, and uses the bundled `dbus-send` client to lower receiver verbosity. Restoration only changes hardware values still at the mode's applied settings; later user adjustments are preserved. The governor controls frequency dynamically within the existing limits.
 
 The supervisor polls health every 10 seconds in this mode, with an interruptible wait so Stop remains responsive. Its sleep-inhibit refresh remains approximately every 30 seconds. Wi-Fi, Bluetooth, firmware UI and audio services remain running. No boot configuration, CPU frequency limits, radio power setting or firmware service is changed. The applied hardware changes are session-only and are restored during normal shutdown or failure cleanup. A separate `low-power.conf` preference, defaulting to disabled, controls which mode the regular Start action selects. KUAL Settings updates persist and apply immediately; quick mode actions do not overwrite that preference. A forced kill can bypass cleanup; reboot or the Restore normal power action can recover retained snapshots.
+
+## Bounded audio and resync
+
+The helper byte-bounds its leaky downstream queue at 16384 bytes / four buffers; it no longer relies on raw PCM timestamps for a time-only queue limit. A request file asks the helper's main thread to reset the mixer pipeline, nonblockingly drain old FIFO data, and restart playback. The retained read/write FIFO descriptor keeps the producer connected throughout. An acknowledgement records completion and discarded bytes. This does not restart Shairport or pretend to measure the speaker's Bluetooth delay.
+
+## Idle telemetry and sleep
+
+The helper queries source byte position once per second and atomically writes monotonic observation time, last byte-progress time and position into the temporary control directory. The supervisor's normal health loop calls `idle-control.sh`; no source metadata or remote-player polling is needed. A missing or older-than-30-second observation cannot cause sleep. Changing the timer resets its baseline, and an enabled timer temporarily keeps the Kindle awake so normal powerd timeout does not preempt it. On expiry, cleanup happens before a native sleep-button request, guarded by firmware state and any remaining external inhibitor.

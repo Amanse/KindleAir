@@ -8,7 +8,9 @@ Mac / iPhone / iPad ──AirPlay over Wi-Fi──> Kindle ──Bluetooth──
 
 KindleAir combines [Shairport Sync](https://github.com/mikebrady/shairport-sync) with the Kindle's native GStreamer `mixersink` audio output, following [KinAMP](https://github.com/kbarni/KinAMP)'s audio pipeline and Bluetooth pairing dialog.
 
-**Status: Beta**, version **0.2.0-beta.2**. KindleAir should work on jailbroken Kindles with Bluetooth audio support, KUAL and KOReader, where the firmware provides the compatible native audio mixer. Playback is confirmed on a Kindle Basic 3 (10th generation); other models and firmware versions have not yet been verified.
+**Status: Beta**, version **0.2.0-beta.3**. KindleAir should work on jailbroken Kindles with Bluetooth audio support, KUAL and KOReader, where the firmware provides the compatible native audio mixer. Playback is confirmed on a Kindle Basic 3 (10th generation); other models and firmware versions have not yet been verified.
+
+[Download the current beta](https://github.com/Amanse/KindleAir/releases/tag/v0.2.0-beta.3).
 
 ## Requirements
 
@@ -25,7 +27,7 @@ KindleAir combines [Shairport Sync](https://github.com/mikebrady/shairport-sync)
 | Firmware audio | GStreamer 0.10, `mixersink` |
 | AirPlay receiver | Shairport Sync 5.5.1, classic AirPlay |
 | Bluetooth endpoints | JBL Live 770NC; JBL Clip 4 (low-power beta) |
-| Confirmed | Discovery, RTSP connection, audible output, sleep controls, low-power playback and CPU/frontlight restoration |
+| Confirmed | Discovery, RTSP connection, audible output, sleep controls, low-power playback and CPU/frontlight restoration, resync and idle sleep |
 
 ## Install
 
@@ -42,7 +44,7 @@ To make a drag-and-drop installation ZIP from a checkout:
 python3 scripts/package.py
 ```
 
-Extract the resulting `dist/KindleAir-0.2.0-beta.2.zip` onto the Kindle's USB storage root.
+Extract the resulting `dist/KindleAir-0.2.0-beta.3.zip` onto the Kindle's USB storage root.
 
 ## Pair and play
 
@@ -73,6 +75,24 @@ Choose **Restore normal power** to leave the receiver running with the original 
 
 This reduces avoidable activity but does not put the Kindle into deep sleep: AirPlay needs Wi-Fi, decoding and Bluetooth transmission to remain active. Battery-life improvement has not been quantified in a controlled test. Unsupported hardware controls are skipped, so behavior can differ across Kindle models.
 
+## Resync audio and accumulated delay
+
+Choose **KUAL → KindleAir → Resync audio / clear delay**. This briefly resets the firmware mixer and drains queued PCM without restarting the AirPlay receiver. Playback should resume automatically on the same connection.
+
+The raw PCM queue is capped at 16 KiB / four buffers (about 93 ms at 44.1 kHz stereo), dropping old queued data if downstream playback falls behind. The previous time-only limit could not reliably bound buffers without timestamps. This addresses accumulated local backlog; it does not remove AirPlay's negotiated delay or measure the Bluetooth speaker's internal queue.
+
+A resync can make audio slightly ahead of Apple Music lyrics after removing delay. Exact lyric/video alignment is not guaranteed, and KindleAir cannot change the sender's lyric display clock. The on-device resync test preserved the receiver process and user-confirmed playback recovered.
+
+## Idle sleep timer
+
+Open **KUAL → KindleAir → Settings → Idle sleep timer**. Choose **Off**, **1, 5, 10, 15, 30, 60 or 120 minutes**, or **Show setting**. The saved default is **Off**. Changes apply to the running receiver and start a fresh idle countdown.
+
+Idle means no new PCM audio, not merely no connected sender. Audio progress resets the countdown, including silent audio data that is still being streamed. Paused or disconnected senders count as idle when they stop delivering audio. Stale or unavailable progress telemetry is treated as unknown and will not trigger sleep.
+
+An enabled timer keeps the Kindle awake until the selected idle interval expires, even if ordinary keep-awake is disabled. At expiry KindleAir stops the receiver, restores CPU/frontlight settings, removes its firewall rules, releases its own sleep inhibitor, and requests firmware sleep. It does not override another application's sleep inhibitor or toggle an already-inactive Kindle awake. Wake the Kindle and start KindleAir again for another session.
+
+Custom whole-minute values from 0 (Off) through 1440 can be set over SSH with `sh /mnt/us/extensions/kindleair/kindleair.sh idle-minutes N`. The device preference `idle-timer.conf` is excluded from installation ZIPs.
+
 ## Sleep behavior
 
 Open **KUAL → KindleAir → Sleep behavior**:
@@ -81,7 +101,7 @@ Open **KUAL → KindleAir → Sleep behavior**:
 - **Allow normal sleep** releases KindleAir's sleep inhibitor and permits the normal firmware timeout.
 - **Show sleep setting** displays the saved choice.
 
-The default is Keep awake. Changes are saved for future sessions and apply immediately to a running receiver. While enabled, KindleAir checks the inhibitor every 30 seconds and reapplies it if cleared. Stop restores normal sleep when KindleAir acquired the inhibitor; it does not clear one already held by another application. Keeping the device awake uses more battery. The preference is stored locally as `extensions/kindleair/keep-awake.conf` and is excluded from release packages.
+The default is Keep awake. Changes are saved for future sessions and apply immediately to a running receiver. While enabled, KindleAir checks the inhibitor every 30 seconds and reapplies it if cleared. An enabled idle timer keeps the device awake until its idle deadline and then stops the receiver and requests sleep. Stop restores normal sleep when KindleAir acquired the inhibitor; it does not clear one already held by another application. Keeping the device awake uses more battery. The preference is stored locally as `extensions/kindleair/keep-awake.conf` and is excluded from release packages.
 
 ## Limitations
 

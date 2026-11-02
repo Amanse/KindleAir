@@ -22,6 +22,11 @@
           "exitmenu": true
         },
         {
+          "name": "Resync audio / clear delay",
+          "action": "./kindleair.sh",
+          "params": "resync"
+        },
+        {
           "name": "Restore normal power",
           "action": "./kindleair.sh",
           "params": "normal-power"
@@ -51,6 +56,56 @@
                   "name": "Show setting",
                   "action": "./kindleair.sh",
                   "params": "power-status"
+                }
+              ]
+            },
+            {
+              "name": "Idle sleep timer",
+              "items": [
+                {
+                  "name": "Off (default)",
+                  "action": "./kindleair.sh",
+                  "params": "idle-minutes 0"
+                },
+                {
+                  "name": "1 minute",
+                  "action": "./kindleair.sh",
+                  "params": "idle-minutes 1"
+                },
+                {
+                  "name": "5 minutes",
+                  "action": "./kindleair.sh",
+                  "params": "idle-minutes 5"
+                },
+                {
+                  "name": "10 minutes",
+                  "action": "./kindleair.sh",
+                  "params": "idle-minutes 10"
+                },
+                {
+                  "name": "15 minutes",
+                  "action": "./kindleair.sh",
+                  "params": "idle-minutes 15"
+                },
+                {
+                  "name": "30 minutes",
+                  "action": "./kindleair.sh",
+                  "params": "idle-minutes 30"
+                },
+                {
+                  "name": "60 minutes",
+                  "action": "./kindleair.sh",
+                  "params": "idle-minutes 60"
+                },
+                {
+                  "name": "120 minutes",
+                  "action": "./kindleair.sh",
+                  "params": "idle-minutes 120"
+                },
+                {
+                  "name": "Show setting",
+                  "action": "./kindleair.sh",
+                  "params": "idle-status"
                 }
               ]
             }

@@ -12,6 +12,7 @@ with tempfile.TemporaryDirectory() as temporary:
     for path in [base, state, tools]: path.mkdir()
     power = root/'power'; events = root/'events'
     power.write_text('0\n'); events.write_text('')
+    idle=base/'idle-control.sh'; idle.write_text('#!/bin/sh\n[ "${TEST_IDLE:-0}" = 1 ]\n'); idle.chmod(0o755)
     for name, body in {
         'lipc-get-prop': '[ -z "${DBUS_SYSTEM_BUS_ADDRESS:-}" ] || exit 21\ncat "$TEST_POWER"',
         'lipc-set-prop': '[ -z "${DBUS_SYSTEM_BUS_ADDRESS:-}" ] || exit 21\n[ ! -f "$TEST_FAIL" ] || exit 1\nprintf "%s\\n" "$3" > "$TEST_POWER"\nprintf "%s\\n" "$3" >> "$TEST_EVENTS"',
@@ -48,4 +49,7 @@ with tempfile.TemporaryDirectory() as temporary:
         subprocess.run(['sh',str(script),action],env=env,check=True)
         assert (base/'keep-awake.conf').read_text().strip() == expected
         assert power.read_text().strip() == '0'
+    env['TEST_IDLE']='1'
+    run('alive() { return 1; }; save_sleep_setting 0; apply_sleep_setting')
+    assert power.read_text().strip()=='1' and (state/'sleep-owned').exists()
 print('Sleep setting passed: persistence, refresh, ownership, failure and menu actions')

@@ -19,7 +19,7 @@ An existing Avahi PID file causes a deliberate startup refusal. Do not delete an
 
 Check that the Bluetooth device is connected, the sender is playing, and the sender's AirPlay volume is audible. The working setup sends S16_LE, 44.1 kHz stereo PCM into the firmware mixer. Inspect `sink.log` for its pipeline and state result, and `receiver.log` for an incoming session.
 
-A process reported as running does not prove it is receiving samples or producing audible output. The original background-stdin bug was resolved by using a direct FIFO `filesrc` pipeline; use the current build.
+A process reported as running does not prove it is receiving samples or producing audible output. The original background-stdin bug was resolved by explicit FIFO input; the resync build uses an explicitly opened descriptor with `fdsrc`. Use the current build.
 
 ## Startup failure or exit code
 
@@ -58,3 +58,11 @@ Normal shutdown is KUAL → KindleAir → Stop AirPlay receiver. It terminates i
 ## Low-power audio or restoration
 
 If a model stutters in low-power mode, choose **Restore normal power** and compare playback. Adaptive CPU scaling can differ across firmware and hardware. Wi-Fi and Bluetooth remain enabled in either mode. Stop restores hardware settings changed by the mode. If the process was forcibly killed, try Restore normal power before deleting temporary state; a reboot also resets temporary kernel governor state. Battery gains depend on the starting brightness, CPU governor and streaming workload.
+
+## Growing delay or lyric timing
+
+Use Resync audio / clear delay to discard local backlog; expect a brief interruption. The byte-bounded queue prevents raw untimestamped buffers from accumulating indefinitely. This cannot calibrate the sender's lyrics or a Bluetooth device's private buffering. Small fixed offsets, including audio slightly ahead after a reset, can remain. If resync does not acknowledge, inspect `sink.log` and restart KindleAir rather than assuming the queue was cleared.
+
+## Idle timer does not sleep or sleeps unexpectedly
+
+Check Settings → Idle sleep timer and `idle-status` / `media-state` in diagnostics. Ongoing PCM data, even silence, counts as playback. Stale telemetry blocks expiry. The timer is audio-based, so reading or tapping the Kindle does not reset it. An external application's sleep inhibitor can prevent final firmware sleep even after KindleAir stops. Disable the timer if that audio-based behavior is unwanted.

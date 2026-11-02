@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.0-beta.3 — 2026-11-02
+
+- Add Resync audio / clear delay without restarting the AirPlay receiver.
+- Replace the raw PCM queue's unreliable time-only limit with a bounded, downstream-leaky byte/buffer limit.
+- Use an explicitly opened FIFO descriptor and interruptible fdsrc for paused and active mixer resets.
+- Add a saved optional idle sleep timer, menu presets, custom CLI minutes and stale-telemetry protection.
+- Track actual source byte progress using monotonic time; timer expiry cleans up KindleAir and requests native sleep.
+- Integrate the timer with keep-awake settings and respect external sleep inhibitors.
+- Confirm on-device resync recovery, continued playback preventing idle expiry, and paused idle expiry stopping the receiver and entering firmware sleep after 61 seconds. Exact sender lyric alignment remains outside receiver control.
+
 ## 0.2.0-beta.2 — 2026-10-31
 
 - Add KUAL → KindleAir → Settings → Low power mode with saved Enable/Disable and Show setting actions.

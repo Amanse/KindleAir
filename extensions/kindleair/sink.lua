@@ -67,10 +67,17 @@ local function uptime()
  local value = tonumber(f:read('*n')); f:close()
  return math.floor(value)
 end
+-- The supervisor removes the control directory while shutting down. A state
+-- write that loses that race must not abort the audio helper.
 local function write_state(name, value)
- local f = assert(io.open(control .. '/' .. name .. '.new', 'w'))
+ local f = io.open(control .. '/' .. name .. '.new', 'w')
+ if not f then return false end
  f:write(value, '\n'); f:close()
- assert(os.rename(control .. '/' .. name .. '.new', control .. '/' .. name))
+ if not os.rename(control .. '/' .. name .. '.new', control .. '/' .. name) then
+  os.remove(control .. '/' .. name .. '.new')
+  return false
+ end
+ return true
 end
 local function media_progress()
  if pcm == nil then return end

@@ -5,7 +5,7 @@
 ```text
 extensions/kindleair/   KUAL extension and bundled runtime
 scripts/               Package, validate and rebuild tools
-tests/                 Process lifecycle, input forwarding and sleep-setting and low-power restoration and idle timer regression checks
+tests/                 Process lifecycle, input forwarding, sleep setting, low-power restoration, idle timer and KUAL menu regression checks
 docs/                  Architecture, troubleshooting and build notes
 ```
 
@@ -20,7 +20,7 @@ python3 scripts/validate.py
 python3 scripts/package.py
 ```
 
-Validation checks shell syntax, JSON/XML metadata, ARM ELF architecture and runtime dependency closure, the helper's SHA-256 hash, process input/output, error, exit and shutdown behavior, plus sleep preference persistence, inhibitor ownership, low-power restoration and idle-timer boundaries, stale telemetry and sleep guards. These checks do not replace an on-device audio test. The working build was separately tested on the Kindle; see the README compatibility table.
+Validation checks shell syntax, JSON/XML metadata, ARM ELF architecture and runtime dependency closure, the helper's SHA-256 hash, process input/output, error, exit and shutdown behavior, plus sleep preference persistence, inhibitor ownership, low-power restoration, idle-timer boundaries, stale telemetry, sleep guards and KUAL menu shape. The menu test re-implements KUAL's `parse.awk` RPN conditions to prove exactly one On/Off row is visible per setting, and checks that every menu action maps to a command implemented by `kindleair.sh`. These checks do not replace an on-device audio test. The working build was separately tested on the Kindle; see the README compatibility table.
 
 ## Build the Avahi account helper
 

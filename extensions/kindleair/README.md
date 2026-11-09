@@ -1,4 +1,4 @@
-# KindleAir 0.2.0-beta.3
+# KindleAir 0.2.0-beta.4
 
 Classic AirPlay audio receiver → Kindle firmware mixer → paired Bluetooth headphones or speaker.
 
@@ -8,7 +8,7 @@ Classic AirPlay audio receiver → Kindle firmware mixer → paired Bluetooth he
 
 Kindle Basic 3 (10th generation), firmware 5.18.1.1.1, Linux 4.1.15. Shairport Sync 5.5.1 runs from a bundled ARMv7 musl runtime. Audio uses the same signed 16-bit stereo, 44.1 kHz PCM / firmware GStreamer 0.10 mixersink approach as KinAMP.
 
-Local AirPlay discovery, RTSP connections, incoming music and audible Bluetooth output to JBL Live 770NC headphones were confirmed on 2026-10-31. Stop/restart and removal of KindleAir's firewall chain were also checked. Low-power playback was confirmed with JBL Clip 4; live mode switching, CPU/frontlight restoration and a one-second Stop were checked in the beta.
+Local AirPlay discovery, RTSP connections, incoming music and audible Bluetooth output to JBL Live 770NC headphones were confirmed on 2026-10-31. Stop/restart and removal of KindleAir's firewall chain were also checked. Low-power playback was confirmed with JBL Clip 4; live mode switching, CPU/frontlight restoration and a one-second Stop were checked in the beta. The 0.2.0-beta.4 build was confirmed on the same device for discovery, start/stop cleanup, resync and recovery from a forced supervisor kill.
 
 ## Use
 
@@ -21,45 +21,36 @@ Local AirPlay discovery, RTSP connections, incoming music and audible Bluetooth 
 
 It starts on demand, not at boot. This is classic AirPlay audio; AirPlay 2, HomeKit and screen mirroring are not included. Bluetooth adds delay, so video lip sync and multiroom synchronization are not guaranteed.
 
-## Low-power mode
+## Settings
 
-KUAL → KindleAir → **Settings → Low power mode** saves an optional default (disabled initially) and applies it immediately while running. **Start AirPlay (low power)** also enters a session-only mode with adaptive CPU scaling when available, frontlight off, quiet receiver logging and fewer supervisor wakeups. It keeps Wi-Fi, Bluetooth and KUAL available. **Restore normal power** restores the saved governor and brightness without stopping the receiver; Stop restores them too. Later manual brightness/governor changes are respected. This is not deep sleep, and battery-life improvement has not been quantified.
+Everything is under **KUAL → KindleAir → Settings**. Each row shows the current state and flips it when tapped:
+
+- **Low power mode: On / Off** — saved default (off initially) that is applied immediately to a running receiver. Uses adaptive CPU scaling when available, turns the frontlight off, quiets receiver logging and reduces supervisor wakeups. Wi-Fi, Bluetooth and KUAL stay available. Stop or turning the setting off restores the saved governor and brightness; later manual brightness/governor changes are respected.
+- **Keep awake: On / Off** — default On. Holds the firmware sleep inhibitor while the receiver runs and refreshes it every 30 seconds. Stop releases only an inhibitor KindleAir itself acquired.
+- **Auto sleep: On / Off** — idle sleep timer. Turning it on uses the last chosen delay, 15 minutes by default.
+- **Auto sleep delay** — Off, 1, 5, 10, 15, 30, 60 or 120 minutes. Idle means no new PCM audio, not merely no connected sender; paused or disconnected senders count as idle. Stale telemetry never triggers sleep.
+- **Show current settings** — prints the three settings on screen.
+- **Restore normal power (recovery)** — restores CPU/frontlight snapshots left by a forcibly killed session.
+
+An enabled auto-sleep timer keeps the Kindle awake until the selected idle interval expires, even if Keep awake is off. At expiry KindleAir stops the receiver, restores CPU/frontlight settings, removes its firewall rules, releases its own sleep inhibitor and requests firmware sleep. It does not override another application's inhibitor or wake an inactive Kindle.
+
+Changing a setting clears KUAL's parsed-menu cache so the On/Off rows are re-evaluated on the next menu draw. Preferences are `low-power.conf`, `keep-awake.conf`, `idle-timer.conf` and `idle-last.conf`; they are excluded from release packages. Custom whole-minute delays from 0 to 1440 are available over SSH with `sh /mnt/us/extensions/kindleair/kindleair.sh idle-minutes N`.
 
 ## Resync audio and accumulated delay
 
 Choose **KUAL → KindleAir → Resync audio / clear delay**. This briefly resets the firmware mixer and drains queued PCM without restarting the AirPlay receiver. Playback should resume automatically on the same connection.
 
-The raw PCM queue is capped at 16 KiB / four buffers (about 93 ms at 44.1 kHz stereo), dropping old queued data if downstream playback falls behind. The previous time-only limit could not reliably bound buffers without timestamps. This addresses accumulated local backlog; it does not remove AirPlay's negotiated delay or measure the Bluetooth speaker's internal queue.
+The raw PCM queue is capped at 16 KiB / four buffers (about 93 ms at 44.1 kHz stereo), dropping old queued data if downstream playback falls behind. This addresses accumulated local backlog; it does not remove AirPlay's negotiated delay or measure the Bluetooth speaker's internal queue. A resync can make audio slightly ahead of Apple Music lyrics; exact lyric/video alignment is not guaranteed.
 
-A resync can make audio slightly ahead of Apple Music lyrics after removing delay. Exact lyric/video alignment is not guaranteed, and KindleAir cannot change the sender's lyric display clock. The on-device resync test preserved the receiver process and user-confirmed playback recovered.
+## Crash recovery
 
-## Idle sleep timer
-
-Open **KUAL → KindleAir → Settings → Idle sleep timer**. Choose **Off**, **1, 5, 10, 15, 30, 60 or 120 minutes**, or **Show setting**. The saved default is **Off**. Changes apply to the running receiver and start a fresh idle countdown.
-
-Idle means no new PCM audio, not merely no connected sender. Audio progress resets the countdown, including silent audio data that is still being streamed. Paused or disconnected senders count as idle when they stop delivering audio. Stale or unavailable progress telemetry is treated as unknown and will not trigger sleep.
-
-An enabled timer keeps the Kindle awake until the selected idle interval expires, even if ordinary keep-awake is disabled. At expiry KindleAir stops the receiver, restores CPU/frontlight settings, removes its firewall rules, releases its own sleep inhibitor, and requests firmware sleep. It does not override another application's sleep inhibitor or toggle an already-inactive Kindle awake. Wake the Kindle and start KindleAir again for another session.
-
-Custom whole-minute values from 0 (Off) through 1440 can be set over SSH with `sh /mnt/us/extensions/kindleair/kindleair.sh idle-minutes N`. The device preference `idle-timer.conf` is excluded from installation ZIPs.
-
-## Sleep behavior
-
-Open **KUAL → KindleAir → Sleep behavior**:
-
-- **Keep awake while running** prevents automatic sleep during receiver operation.
-- **Allow normal sleep** releases KindleAir's sleep inhibitor and permits the normal firmware timeout.
-- **Show sleep setting** displays the saved choice.
-
-The default is Keep awake. Changes are saved for future sessions and apply immediately to a running receiver. While enabled, KindleAir checks the inhibitor every 30 seconds and reapplies it if cleared. An enabled idle timer keeps the device awake until its idle deadline and then stops the receiver and requests sleep. Stop restores normal sleep when KindleAir acquired the inhibitor; it does not clear one already held by another application. Keeping the device awake uses more battery. The preference is stored locally as `extensions/kindleair/keep-awake.conf` and is excluded from release packages.
+Stop restores hardware settings and removes the firewall chain. If the supervisor is killed with `SIGKILL` or the device loses power, the next Start or Stop cleans up first: leftover KindleAir processes (matched by their own executable paths) are stopped, saved CPU/frontlight snapshots restored, and the stale firewall chain and temporary runtime removed. Processes that do not belong to KindleAir are never signalled, and a live Avahi daemon from another application still blocks startup.
 
 ## Installation and removal
 
 The persistent installation lives entirely in `extensions/kindleair/`. Existing KUAL and KOReader are required; KOReader's LuaJIT runs the firmware audio helper. The bundled runtime is extracted into a unique temporary directory while running. KindleAir uses a private D-Bus and Avahi process and temporarily opens Wi-Fi TCP 5000, UDP 6001–6010 and UDP 5353 through its own `KINDLEAIR` firewall chain. Stop removes those rules and the temporary runtime.
 
 No firmware flashing or system-library replacement is involved. The bundled Avahi uses a small local account-lookup helper so it can run without adding an `avahi` account to the Kindle. Shairport receives an explicit temporary metadata-pipe path to avoid a null-string startup crash in this package. The audio helper opens the PCM FIFO directly using `filesrc`, matching KinAMP.
-
-The saved Sleep behavior setting controls whether KindleAir requests the firmware sleep inhibitor. Stop releases an inhibitor acquired by KindleAir. Long unattended operation and idle Bluetooth retention have not yet been tested.
 
 To remove: Stop KindleAir, connect USB, then delete `extensions/kindleair/`.
 

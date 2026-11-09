@@ -30,5 +30,5 @@ with tempfile.TemporaryDirectory() as directory:
     assert run('preferred_power_mode')=='low'
 menu=json.loads((ROOT/'extensions/kindleair/menu.json').read_text())
 settings=next(i for i in menu['items'][0]['items'] if i['name']=='Settings')
-assert {i['params'] for i in settings['items'][0]['items']}=={'power-low','power-normal','power-status'}
+assert {'power-low','power-normal'} <= {i['params'] for i in settings['items'] if 'action' in i}
 print('Saved power setting: default off, persistence, live changes, CLI/menu and session overrides passed')

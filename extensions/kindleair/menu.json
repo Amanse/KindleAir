@@ -4,142 +4,198 @@
       "name": "KindleAir",
       "items": [
         {
-          "name": "Pair Bluetooth speaker",
-          "action": "./kindleair.sh",
-          "params": "bluetooth",
-          "exitmenu": true
-        },
-        {
           "name": "Start AirPlay receiver",
           "action": "./kindleair.sh",
+          "params": "start",
           "exitmenu": true,
-          "params": "start"
-        },
-        {
-          "name": "Start AirPlay (low power)",
-          "action": "./kindleair.sh",
-          "params": "start-low",
-          "exitmenu": true
-        },
-        {
-          "name": "Resync audio / clear delay",
-          "action": "./kindleair.sh",
-          "params": "resync"
-        },
-        {
-          "name": "Restore normal power",
-          "action": "./kindleair.sh",
-          "params": "normal-power"
+          "priority": 10
         },
         {
           "name": "Stop AirPlay receiver",
           "action": "./kindleair.sh",
-          "params": "stop"
+          "params": "stop",
+          "priority": 20
         },
         {
-          "name": "Settings",
-          "items": [
-            {
-              "name": "Low power mode",
-              "items": [
-                {
-                  "name": "Enable (saved default)",
-                  "action": "./kindleair.sh",
-                  "params": "power-low"
-                },
-                {
-                  "name": "Disable (saved default)",
-                  "action": "./kindleair.sh",
-                  "params": "power-normal"
-                },
-                {
-                  "name": "Show setting",
-                  "action": "./kindleair.sh",
-                  "params": "power-status"
-                }
-              ]
-            },
-            {
-              "name": "Idle sleep timer",
-              "items": [
-                {
-                  "name": "Off (default)",
-                  "action": "./kindleair.sh",
-                  "params": "idle-minutes 0"
-                },
-                {
-                  "name": "1 minute",
-                  "action": "./kindleair.sh",
-                  "params": "idle-minutes 1"
-                },
-                {
-                  "name": "5 minutes",
-                  "action": "./kindleair.sh",
-                  "params": "idle-minutes 5"
-                },
-                {
-                  "name": "10 minutes",
-                  "action": "./kindleair.sh",
-                  "params": "idle-minutes 10"
-                },
-                {
-                  "name": "15 minutes",
-                  "action": "./kindleair.sh",
-                  "params": "idle-minutes 15"
-                },
-                {
-                  "name": "30 minutes",
-                  "action": "./kindleair.sh",
-                  "params": "idle-minutes 30"
-                },
-                {
-                  "name": "60 minutes",
-                  "action": "./kindleair.sh",
-                  "params": "idle-minutes 60"
-                },
-                {
-                  "name": "120 minutes",
-                  "action": "./kindleair.sh",
-                  "params": "idle-minutes 120"
-                },
-                {
-                  "name": "Show setting",
-                  "action": "./kindleair.sh",
-                  "params": "idle-status"
-                }
-              ]
-            }
-          ]
+          "name": "Pair Bluetooth speaker",
+          "action": "./kindleair.sh",
+          "params": "bluetooth",
+          "exitmenu": true,
+          "priority": 30
         },
         {
-          "name": "Sleep behavior",
-          "items": [
-            {
-              "name": "Keep awake while running",
-              "action": "./kindleair.sh",
-              "params": "sleep-on"
-            },
-            {
-              "name": "Allow normal sleep",
-              "action": "./kindleair.sh",
-              "params": "sleep-off"
-            },
-            {
-              "name": "Show sleep setting",
-              "action": "./kindleair.sh",
-              "params": "sleep-status"
-            }
-          ]
+          "name": "Resync audio / clear delay",
+          "action": "./kindleair.sh",
+          "params": "resync",
+          "priority": 40
         },
         {
           "name": "Status",
           "action": "./kindleair.sh",
-          "params": "status"
+          "params": "status",
+          "priority": 50
         },
         {
           "name": "Collect diagnostics",
           "action": "./kindleair.sh",
-          "params": "diagnose"
+          "params": "diagnose",
+          "priority": 60
+        },
+        {
+          "name": "Settings",
+          "priority": 70,
+          "items": [
+            {
+              "name": "Low power mode: On (tap to turn off)",
+              "action": "./kindleair.sh",
+              "params": "power-normal",
+              "refresh": true,
+              "exitmenu": false,
+              "status": false,
+              "if": "\"/mnt/us/extensions/kindleair/low-power.conf\" \"1\" -gg",
+              "priority": 10
+            },
+            {
+              "name": "Low power mode: Off (tap to turn on)",
+              "action": "./kindleair.sh",
+              "params": "power-low",
+              "refresh": true,
+              "exitmenu": false,
+              "status": false,
+              "if": "\"/mnt/us/extensions/kindleair/low-power.conf\" \"1\" -gg !",
+              "priority": 10
+            },
+            {
+              "name": "Keep awake: On (tap to allow sleep)",
+              "action": "./kindleair.sh",
+              "params": "sleep-off",
+              "refresh": true,
+              "exitmenu": false,
+              "status": false,
+              "if": "\"/mnt/us/extensions/kindleair/keep-awake.conf\" -e ! \"/mnt/us/extensions/kindleair/keep-awake.conf\" \"1\" -gg ||",
+              "priority": 20
+            },
+            {
+              "name": "Keep awake: Off (tap to keep awake)",
+              "action": "./kindleair.sh",
+              "params": "sleep-on",
+              "refresh": true,
+              "exitmenu": false,
+              "status": false,
+              "if": "\"/mnt/us/extensions/kindleair/keep-awake.conf\" -e ! \"/mnt/us/extensions/kindleair/keep-awake.conf\" \"1\" -gg || !",
+              "priority": 20
+            },
+            {
+              "name": "Auto sleep: On (tap to turn off)",
+              "action": "./kindleair.sh",
+              "params": "idle-toggle",
+              "refresh": true,
+              "exitmenu": false,
+              "status": false,
+              "if": "\"/mnt/us/extensions/kindleair/idle-timer.conf\" \"^[1-9]\" -gg",
+              "priority": 30
+            },
+            {
+              "name": "Auto sleep: Off (tap to turn on)",
+              "action": "./kindleair.sh",
+              "params": "idle-toggle",
+              "refresh": true,
+              "exitmenu": false,
+              "status": false,
+              "if": "\"/mnt/us/extensions/kindleair/idle-timer.conf\" \"^[1-9]\" -gg !",
+              "priority": 30
+            },
+            {
+              "name": "Auto sleep delay",
+              "priority": 40,
+              "items": [
+                {
+                  "name": "Off",
+                  "action": "./kindleair.sh",
+                  "params": "idle-minutes 0",
+                  "refresh": true,
+                  "exitmenu": false,
+                  "status": false,
+                  "priority": 10
+                },
+                {
+                  "name": "1 minute",
+                  "action": "./kindleair.sh",
+                  "params": "idle-minutes 1",
+                  "refresh": true,
+                  "exitmenu": false,
+                  "status": false,
+                  "priority": 20
+                },
+                {
+                  "name": "5 minutes",
+                  "action": "./kindleair.sh",
+                  "params": "idle-minutes 5",
+                  "refresh": true,
+                  "exitmenu": false,
+                  "status": false,
+                  "priority": 30
+                },
+                {
+                  "name": "10 minutes",
+                  "action": "./kindleair.sh",
+                  "params": "idle-minutes 10",
+                  "refresh": true,
+                  "exitmenu": false,
+                  "status": false,
+                  "priority": 40
+                },
+                {
+                  "name": "15 minutes",
+                  "action": "./kindleair.sh",
+                  "params": "idle-minutes 15",
+                  "refresh": true,
+                  "exitmenu": false,
+                  "status": false,
+                  "priority": 50
+                },
+                {
+                  "name": "30 minutes",
+                  "action": "./kindleair.sh",
+                  "params": "idle-minutes 30",
+                  "refresh": true,
+                  "exitmenu": false,
+                  "status": false,
+                  "priority": 60
+                },
+                {
+                  "name": "60 minutes",
+                  "action": "./kindleair.sh",
+                  "params": "idle-minutes 60",
+                  "refresh": true,
+                  "exitmenu": false,
+                  "status": false,
+                  "priority": 70
+                },
+                {
+                  "name": "120 minutes",
+                  "action": "./kindleair.sh",
+                  "params": "idle-minutes 120",
+                  "refresh": true,
+                  "exitmenu": false,
+                  "status": false,
+                  "priority": 80
+                }
+              ]
+            },
+            {
+              "name": "Show current settings",
+              "action": "./kindleair.sh",
+              "params": "settings-status",
+              "priority": 50
+            },
+            {
+              "name": "Restore normal power (recovery)",
+              "action": "./kindleair.sh",
+              "params": "normal-power",
+              "priority": 60
+            }
+          ]
         }
       ]
     }

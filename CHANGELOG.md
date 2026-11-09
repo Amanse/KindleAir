@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.2.0-beta.4 — 2026-11-09
+
+- Consolidate every saved power and sleep option into **KUAL → KindleAir → Settings**. The menu now has one row per setting whose label states its current value, so the top level is only start, stop, pair, resync, status, diagnostics and settings.
+- Replace the separate **Sleep behavior** submenu and the scattered low-power entries with **Low power mode**, **Keep awake**, **Auto sleep** and **Auto sleep delay** rows. The old quick-start and restore-power entries are gone from the menu; `start-low` and `normal-power` remain available over SSH.
+- Add an **Auto sleep** toggle that turns the timer off and back on at the last chosen delay, stored in `idle-last.conf` (default 15 minutes).
+- Drop KUAL's parsed-menu cache after a settings change so the On/Off rows are re-evaluated on the next menu draw instead of showing a stale state.
+- Shorten on-screen notices to the display's one-line limit; longer status text no longer disappears with an `eips` range error.
+- Recover from a crash or forced kill: Start and Stop stop leftover KindleAir processes (matched by their own command lines), restore CPU/frontlight snapshots, remove a stale `KINDLEAIR` firewall chain and delete the old temporary runtime before continuing.
+- Detect and replace an Avahi pid file left by a killed daemon instead of refusing to start until reboot; a live Avahi from another application is still left alone.
+- Recreate the firewall chain if a previous session left it behind, so a crash cannot block every later start.
+- Keep the audio helper alive if the control directory disappears during shutdown instead of asserting.
+- Extend validation with a KUAL menu test that evaluates the same RPN conditions as KUAL's parser and checks every menu action against `kindleair.sh`.
+
 ## 0.2.0-beta.3 — 2026-11-02
 
 - Add Resync audio / clear delay without restarting the AirPlay receiver.

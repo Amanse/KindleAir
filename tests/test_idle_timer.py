@@ -45,3 +45,26 @@ request_idle_sleep
         assert output.exists()==should_sleep
         if should_sleep:assert output.read_text()=='com.lab126.powerd powerButton 1'
 print('Idle sleep respects external inhibitors and never wakes an inactive Kindle')
+
+# The KUAL toggle turns the timer off and back on at the last chosen delay.
+source=(ROOT/'extensions/kindleair/kindleair.sh').read_text()
+with tempfile.TemporaryDirectory() as directory:
+    root=Path(directory);base=root/'app';state=root/'state';base.mkdir();state.mkdir()
+    uptime=root/'uptime';uptime.write_text('100.0 0.0\n')
+    helper=(ROOT/'extensions/kindleair/idle-control.sh').read_text()
+    helper=helper.replace('BASE=/mnt/us/extensions/kindleair',f'BASE={base}').replace('STATE=/tmp/kindleair-control',f'STATE={state}').replace('UPTIME=/proc/uptime',f'UPTIME={uptime}')
+    (base/'idle-control.sh').write_text(helper);(base/'idle-control.sh').chmod(0o755)
+    prefix,branches=source.replace('BASE=/mnt/us/extensions/kindleair',f'BASE={base}').replace('STATE=/tmp/kindleair-control',f'STATE={state}').split('case "${1:-status}" in',1)
+    script=root/'kindleair.sh'
+    script.write_text(prefix+'\nalive() { return 1; }\neips() { :; }\ncase "${1:-status}" in'+branches)
+    def run(*args):subprocess.run(['sh',str(script),*map(str,args)],check=True,capture_output=True)
+    def status():return subprocess.run(['sh',str(base/'idle-control.sh'),'status'],capture_output=True,text=True,check=True).stdout.strip()
+    def last():return subprocess.run(['sh',str(base/'idle-control.sh'),'last'],capture_output=True,text=True,check=True).stdout.strip()
+    run('idle-minutes','30');assert status()=='30' and last()=='30'
+    run('idle-toggle');assert status()=='0' and last()=='30'
+    run('idle-toggle');assert status()=='30' and last()=='30'
+    assert last()=='30'  # Off keeps the remembered delay
+    run('idle-minutes','0');assert status()=='0' and last()=='30'
+    assert last()=='30'
+    (base/'idle-last.conf').write_text('bogus\n');assert last()=='15'
+print('Idle toggle: off/on at the remembered delay and safe defaults passed')

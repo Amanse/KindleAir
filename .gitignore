@@ -21,3 +21,4 @@ extensions/kindleair/keep-awake.conf*
 extensions/kindleair/low-power.conf*
 extensions/kindleair/idle-timer.conf*
 extensions/kindleair/sink.lua.previous
+extensions/kindleair/idle-last.conf*

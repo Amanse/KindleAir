@@ -53,7 +53,7 @@ The pairing action asks `com.lab126.btfd` to enable Bluetooth and opens the firm
 
 ## Saved sleep behavior
 
-`keep-awake.conf` is a device-local 1/0 preference, defaulting to enabled when absent. KUAL changes apply immediately when the supervisor is running. An ownership marker under the temporary control directory records an inhibitor acquired from a clear firmware property. Stop releases only that owned inhibitor. The supervisor checks the saved preference and refreshes an enabled request every 30 seconds. No always-on wake service runs after Stop.
+`keep-awake.conf` is a device-local 1/0 preference, defaulting to enabled when absent. The KUAL **Settings → Keep awake** row is a single toggle whose label reflects the saved value, because KUAL can only evaluate menu conditions from files when it parses the menu. Changes apply immediately when the supervisor is running. An ownership marker under the temporary control directory records an inhibitor acquired from a clear firmware property. Stop releases only that owned inhibitor. The supervisor checks the saved preference and refreshes an enabled request every 30 seconds. No always-on wake service runs after Stop.
 
 Native LIPC calls explicitly clear `DBUS_SYSTEM_BUS_ADDRESS` so power and Bluetooth commands reach the firmware services, not the private discovery bus. This also fixes the earlier automatic sleep-inhibit request.
 
@@ -61,7 +61,19 @@ Native LIPC calls explicitly clear `DBUS_SYSTEM_BUS_ADDRESS` so power and Blueto
 
 `power-mode.sh` snapshots the current CPU governor and frontlight level in the temporary control directory. Where available, it replaces `performance` or `userspace` with `ondemand`, leaves already power-saving governors alone, turns off the frontlight, and uses the bundled `dbus-send` client to lower receiver verbosity. Restoration only changes hardware values still at the mode's applied settings; later user adjustments are preserved. The governor controls frequency dynamically within the existing limits.
 
-The supervisor polls health every 10 seconds in this mode, with an interruptible wait so Stop remains responsive. Its sleep-inhibit refresh remains approximately every 30 seconds. Wi-Fi, Bluetooth, firmware UI and audio services remain running. No boot configuration, CPU frequency limits, radio power setting or firmware service is changed. The applied hardware changes are session-only and are restored during normal shutdown or failure cleanup. A separate `low-power.conf` preference, defaulting to disabled, controls which mode the regular Start action selects. KUAL Settings updates persist and apply immediately; quick mode actions do not overwrite that preference. A forced kill can bypass cleanup; reboot or the Restore normal power action can recover retained snapshots.
+The supervisor polls health every 10 seconds in this mode, with an interruptible wait so Stop remains responsive. Its sleep-inhibit refresh remains approximately every 30 seconds. Wi-Fi, Bluetooth, firmware UI and audio services remain running. No boot configuration, CPU frequency limits, radio power setting or firmware service is changed. The applied hardware changes are session-only and are restored during normal shutdown or failure cleanup. A separate `low-power.conf` preference, defaulting to disabled, controls which mode the regular Start action selects. The KUAL **Settings → Low power mode** toggle persists the choice and applies it immediately; the CLI commands `start-low` and `normal-power` remain available for one-off overrides. A forced kill can bypass cleanup; reboot or the Restore normal power action can recover retained snapshots.
+
+## KUAL Settings menu
+
+All saved power and sleep choices live in one **Settings** submenu. Rather than a static list of every option, each setting is a single row whose label states its current value, for example `Low power mode: On (tap to turn off)`. KUAL's `if` expressions select the visible row by reading the preference file with its restricted RPN evaluator, so the menu always shows exactly one row per setting.
+
+Those conditions are evaluated when KUAL parses `menu.json`, and KUAL keeps a parsed menu cache in `/var/tmp/KUAL.cache`. Every settings command removes that cache, so the next menu draw re-reads the preferences instead of showing a stale On/Off label. Rows also use `refresh` and `exitmenu: false` so KUAL re-parses the menu in place after a tap.
+
+Menu labels are deliberately short: `eips` renders roughly 36 characters per line on the 600 px display, and the settings summary uses three separate lines.
+
+## Crash recovery
+
+A normal Stop signals the supervisor, which stops every recorded child and runs its cleanup trap. A supervisor killed with `SIGKILL` cannot do that, so the next Start or Stop recovers first. Leftover components are found by scanning `/proc` for KindleAir's own executable paths (`component.sh`, `sink.lua`, or a `/tmp/kindleair.*` musl loader). The match is on the first two command-line words, so a shell that merely mentions those paths is never signalled. The saved CPU/frontlight snapshots are restored, the `KINDLEAIR` firewall chain is deleted, the stale runtime directory is removed, and the temporary control directory is dropped before a new session starts.
 
 ## Bounded audio and resync
 

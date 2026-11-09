@@ -53,11 +53,15 @@ No SSH key or credentials are included in this repository. SSH is not needed for
 
 ## Remove or recover
 
-Normal shutdown is KUAL → KindleAir → Stop AirPlay receiver. It terminates its children, removes its firewall chain and deletes its extracted runtime. If a crash or forced termination leaves stale state, collect the logs first; a device reboot clears temporary runtime and in-memory firewall state. This prototype does not install a boot service.
+Normal shutdown is KUAL → KindleAir → Stop AirPlay receiver. It terminates its children, removes its firewall chain and deletes its extracted runtime. If a crash or forced termination leaves stale state, Start or Stop cleans it up as described above; a device reboot also clears temporary runtime and in-memory firewall state. This prototype does not install a boot service.
+
+## Start reports a failure after a crash
+
+A supervisor that was killed with `SIGKILL` leaves its child processes and hardware snapshots behind. The next **Start AirPlay receiver** or **Stop AirPlay receiver** scans for KindleAir's own executables, stops them, restores the CPU governor and frontlight, deletes the stale `KINDLEAIR` firewall chain and removes the old temporary runtime before continuing. If Start still fails, collect diagnostics; the log records why. A live Avahi daemon that belongs to another application still blocks startup and must be stopped separately.
 
 ## Low-power audio or restoration
 
-If a model stutters in low-power mode, choose **Restore normal power** and compare playback. Adaptive CPU scaling can differ across firmware and hardware. Wi-Fi and Bluetooth remain enabled in either mode. Stop restores hardware settings changed by the mode. If the process was forcibly killed, try Restore normal power before deleting temporary state; a reboot also resets temporary kernel governor state. Battery gains depend on the starting brightness, CPU governor and streaming workload.
+If a model stutters in low-power mode, turn **Settings → Low power mode** off and compare playback. Adaptive CPU scaling can differ across firmware and hardware. Wi-Fi and Bluetooth remain enabled in either mode. Stop restores hardware settings changed by the mode. If the process was forcibly killed, **Start AirPlay receiver** and **Stop AirPlay receiver** now recover leftover processes, hardware snapshots and firewall rules automatically; **Settings → Restore normal power (recovery)** does the hardware part only. Battery gains depend on the starting brightness, CPU governor and streaming workload.
 
 ## Growing delay or lyric timing
 
@@ -65,4 +69,4 @@ Use Resync audio / clear delay to discard local backlog; expect a brief interrup
 
 ## Idle timer does not sleep or sleeps unexpectedly
 
-Check Settings → Idle sleep timer and `idle-status` / `media-state` in diagnostics. Ongoing PCM data, even silence, counts as playback. Stale telemetry blocks expiry. The timer is audio-based, so reading or tapping the Kindle does not reset it. An external application's sleep inhibitor can prevent final firmware sleep even after KindleAir stops. Disable the timer if that audio-based behavior is unwanted.
+Check **Settings → Auto sleep** and `idle-status` / `media-state` in diagnostics. Ongoing PCM data, even silence, counts as playback. Stale telemetry blocks expiry. The timer is audio-based, so reading or tapping the Kindle does not reset it. An external application's sleep inhibitor can prevent final firmware sleep even after KindleAir stops. Disable the timer if that audio-based behavior is unwanted.

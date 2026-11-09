@@ -2,6 +2,7 @@
 BASE=/mnt/us/extensions/kindleair
 STATE=/tmp/kindleair-control
 PREF="$BASE/idle-timer.conf"
+LAST="$BASE/idle-last.conf"
 UPTIME=/proc/uptime
 minutes() {
  KA_MINUTES=0
@@ -9,6 +10,14 @@ minutes() {
  case "$KA_MINUTES" in ''|*[!0-9]*) KA_MINUTES=0;; esac
  [ "$KA_MINUTES" -le 1440 ] 2>/dev/null || KA_MINUTES=0
  printf '%s\n' "$KA_MINUTES"
+}
+# The KUAL toggle turns the timer back on at the last chosen delay.
+last_minutes() {
+ KA_LAST=15
+ [ ! -f "$LAST" ] || read -r KA_LAST < "$LAST"
+ case "$KA_LAST" in ''|*[!0-9]*) KA_LAST=15;; esac
+ if [ "$KA_LAST" -ge 1 ] 2>/dev/null && [ "$KA_LAST" -le 1440 ] 2>/dev/null; then :; else KA_LAST=15; fi
+ printf '%s\n' "$KA_LAST"
 }
 now() { read -r KA_UPTIME KA_UNUSED < "$UPTIME"; printf '%s\n' "${KA_UPTIME%%.*}"; }
 case "${1:-status}" in
@@ -20,9 +29,13 @@ case "${1:-status}" in
   # Normalize decimal strings so leading zeros cannot change arithmetic interpretation.
   KA_VALUE=$(printf '%s' "$KA_VALUE" | sed 's/^0*//'); KA_VALUE=${KA_VALUE:-0}
   printf '%s\n' "$KA_VALUE" > "$PREF.new" && mv "$PREF.new" "$PREF" || exit 1
+  if [ "$KA_VALUE" -gt 0 ]; then
+   printf '%s\n' "$KA_VALUE" > "$LAST.new" && mv "$LAST.new" "$LAST" || :
+  fi
   if [ -d "$STATE" ]; then now > "$STATE/idle-reset"; rm -f "$STATE/idle-status"; fi
   ;;
  status) minutes;;
+ last) last_minutes;;
  check)
   KA_LIMIT=$(minutes)
   if [ "$KA_LIMIT" = 0 ]; then rm -f "$STATE/idle-status"; exit 0; fi
@@ -44,5 +57,5 @@ case "${1:-status}" in
   printf '%s\n' "$KA_REMAINING" > "$STATE/idle-status"
   if [ "$KA_REMAINING" -le 0 ]; then exit 10; fi
   ;;
- *) echo 'Usage: idle-control.sh enabled|set MINUTES|status|check' >&2; exit 2;;
+ *) echo 'Usage: idle-control.sh enabled|set MINUTES|status|last|check' >&2; exit 2;;
 esac
